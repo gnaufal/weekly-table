@@ -1,0 +1,2913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Table — Eat Smarter, In and Out</title>
+<style>
+  :root{
+    --bg:#faf6ef; --card:#ffffff; --ink:#332a20; --sub:#8a7c6c; --line:#ece3d5;
+    --accent:#1d4e5f; --accent-dark:#123847; --accent-bg:#e3edf0;
+    --check:#4c7a52; --check-bg:#e8f1e6;
+    --green:#1e9e58; --green-bg:#e7f7ee; --green-bd:#bfe8d1;
+    --orange:#c97a12; --orange-bg:#fdf2df; --orange-bd:#f2d9a6;
+    --red:#d9432e; --red-bg:#fcebe9; --red-bd:#f4c6bf;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);}
+  h1,h2,h3,h4{font-family:Georgia,"Times New Roman",serif;}
+  header{background:var(--accent);color:#fff;padding:26px 18px 0;text-align:center;}
+  header h1{margin:0 0 6px;font-size:28px;letter-spacing:-0.01em;}
+  header p{margin:0 0 18px;font-size:14px;opacity:0.95;}
+  .tabs{display:flex;justify-content:center;gap:4px;}
+  .tab-btn{background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:10px 10px 0 0;padding:11px 22px;font-size:14.5px;font-weight:700;cursor:pointer;opacity:0.75;}
+  .tab-btn.active{background:var(--bg);color:var(--accent-dark);opacity:1;}
+  .disclaimer{background:#fff8e6;border-bottom:1px solid #f0ddaa;color:#7a5b0a;font-size:12.5px;text-align:center;padding:8px 14px;line-height:1.4;}
+  .disclaimer b{color:#5c4400;}
+  main{max-width:980px;margin:0 auto;padding:22px 16px 60px;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  section.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:20px;}
+  section.panel h2{margin:0 0 4px;font-size:19px;}
+  section.panel .hint{color:var(--sub);font-size:13px;margin:0 0 14px;}
+  section.panel .hint a{color:var(--accent-dark);}
+
+  /* ---- shared small bits ---- */
+  .empty-note{color:var(--sub);font-size:13.5px;text-align:center;padding:20px 0;}
+  .ghost-btn{background:none;border:1px solid var(--line);padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;color:var(--ink);}
+  .ghost-btn:hover{background:#f4ede2;}
+  .primary-btn{background:var(--accent);color:#fff;border:none;padding:11px 26px;border-radius:24px;font-size:14.5px;font-weight:700;cursor:pointer;}
+  .primary-btn:hover{background:var(--accent-dark);}
+  .primary-btn:disabled{background:#c9ccd2;cursor:not-allowed;}
+  .controls-row{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:10px 0 14px;font-size:14px;}
+  .controls-row label{color:var(--sub);margin-right:6px;}
+  .controls-row select, .controls-row input[type=number], .controls-row input[type=text], .controls-row input[type=password]{padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:14px;}
+  .status-msg{text-align:center;color:var(--sub);font-size:13.5px;margin-top:8px;min-height:18px;}
+  .status-msg.error{color:var(--red);}
+  footer{max-width:980px;margin:10px auto 40px;padding:0 16px;color:var(--sub);font-size:12px;line-height:1.6;text-align:center;}
+  footer a{color:var(--sub);}
+  .attrib{margin-top:6px;font-size:11.5px;}
+
+  /* ================= Eating Out tab ================= */
+  .columns{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:start;}
+  @media (max-width:720px){ .columns{grid-template-columns:1fr;} .vs-divider{display:none;} }
+  .vs-divider{align-self:center;font-weight:800;color:var(--sub);font-size:14px;padding-top:80px;}
+  .meal-col{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;}
+  .meal-col h2{margin:0 0 10px;font-size:16px;display:flex;align-items:center;justify-content:space-between;}
+  .meal-name-input{border:none;border-bottom:2px dashed var(--line);font-size:16px;font-weight:700;width:100%;padding:2px 0 4px;background:transparent;color:var(--ink);}
+  .meal-name-input:focus{outline:none;border-color:var(--accent);}
+  .restaurant-select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;margin:8px 0;font-size:14px;}
+  .search-wrap{position:relative;margin-bottom:8px;}
+  .search-input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;}
+  .search-results{position:absolute;z-index:5;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);width:100%;max-height:260px;overflow-y:auto;margin-top:4px;}
+  .search-results div.item{padding:8px 10px;font-size:13.5px;cursor:pointer;border-bottom:1px solid #f0f1f3;display:flex;justify-content:space-between;gap:8px;}
+  .search-results div.item:hover{background:#f7f4ef;}
+  .search-results .r-name{font-weight:600;}
+  .search-results .r-sub{color:var(--sub);font-size:12px;}
+  .search-results .r-cal{color:var(--sub);white-space:nowrap;font-size:12px;}
+  .meal-items{list-style:none;margin:8px 0 0;padding:0;}
+  .meal-items li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 8px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;font-size:13.5px;}
+  .meal-items .mi-info{display:flex;flex-direction:column;}
+  .meal-items .mi-info b{font-size:13.5px;}
+  .meal-items .mi-info span{color:var(--sub);font-size:11.5px;}
+  .qty-ctrl{display:flex;align-items:center;gap:6px;}
+  .qty-ctrl button{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;line-height:1;}
+  .remove-btn{border:none;background:none;color:#b6392a;font-size:16px;cursor:pointer;padding:0 2px;}
+  .subtotal{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--sub);display:flex;justify-content:space-between;}
+  .subtotal b{color:var(--ink);font-size:15px;}
+  .compare-row{text-align:center;margin:22px 0;}
+  .compare-btn{background:var(--accent);color:#fff;border:none;padding:13px 34px;border-radius:30px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px rgba(29,78,95,0.3);}
+  .compare-btn:disabled{background:#c9ccd2;box-shadow:none;cursor:not-allowed;}
+  .compare-btn:not(:disabled):hover{background:var(--accent-dark);}
+  #results{display:none;}
+  .verdict-banner{border-radius:14px;padding:18px 20px;margin-bottom:16px;text-align:center;border:1px solid;}
+  .verdict-banner .badge{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;opacity:.85;}
+  .verdict-banner h3{margin:6px 0 4px;font-size:20px;}
+  .verdict-banner .verdict-items{font-size:13px;opacity:.82;margin-bottom:8px;}
+  .verdict-banner p{margin:0;font-size:14px;}
+  .verdict-banner.green{background:var(--green-bg);border-color:var(--green-bd);color:#0d5a33;}
+  .verdict-banner.orange{background:var(--orange-bg);border-color:var(--orange-bd);color:#6e4a08;}
+  .verdict-banner.red{background:var(--red-bg);border-color:var(--red-bd);color:#7a271b;}
+  .verdict-banner.tie{background:#eef1f6;border-color:#dde1e8;color:#3a4152;}
+  .simple-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  @media (max-width:600px){.simple-cards{grid-template-columns:1fr;}}
+  .simple-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center;position:relative;}
+  .simple-card.winner{border:2px solid var(--green);}
+  .simple-card .crown{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .simple-card h4{margin:6px 0 2px;font-size:15px;}
+  .simple-card .items-list{font-size:11.5px;color:var(--sub);margin:0 0 4px;line-height:1.35;min-height:15px;}
+  .light{width:54px;height:54px;border-radius:50%;margin:8px auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff;}
+  .light.green{background:var(--green);} .light.orange{background:var(--orange);} .light.red{background:var(--red);}
+  .simple-card .cal{font-size:26px;font-weight:800;margin:2px 0 0;}
+  .simple-card .cal span{font-size:13px;font-weight:500;color:var(--sub);}
+  .simple-card .grade-label{font-size:12.5px;color:var(--sub);margin-top:2px;}
+  .toggle-details{display:block;margin:6px auto 16px;background:none;border:1px solid var(--line);padding:8px 16px;border-radius:20px;font-size:13px;cursor:pointer;color:var(--ink);}
+  .toggle-details:hover{background:#f0f1f3;}
+  #details-table{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{padding:8px 6px;text-align:center;border-bottom:1px solid #f0f1f3;}
+  th{color:var(--sub);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  td.metric-name{text-align:left;font-weight:600;}
+  .chip{display:inline-block;min-width:64px;padding:4px 8px;border-radius:8px;font-weight:700;font-size:13px;}
+  .chip.green{background:var(--green-bg);color:var(--green);} .chip.orange{background:var(--orange-bg);color:var(--orange);} .chip.red{background:var(--red-bg);color:var(--red);}
+  .exercise-section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px;}
+  .exercise-section h3{margin:0 0 4px;font-size:16px;}
+  .exercise-section .sub{color:var(--sub);font-size:13px;margin-bottom:12px;}
+  .ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:600px){.ex-grid{grid-template-columns:1fr;}}
+  .ex-col h5{margin:0 0 8px;font-size:14px;}
+  .ex-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f3f3f4;font-size:13.5px;}
+  .ex-item:last-child{border-bottom:none;}
+  .ex-item .act{display:flex;gap:8px;align-items:center;}
+  .ex-item .mins{font-weight:700;}
+
+  /* ================= Cooking at Home tab ================= */
+  .stores-row{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 6px;}
+  .store-chip{display:flex;align-items:center;gap:8px;background:var(--accent-bg);border:1px solid #c3d6db;border-radius:20px;padding:6px 8px 6px 14px;font-size:13.5px;}
+  .store-chip input{border:none;background:transparent;font-size:13.5px;font-weight:600;color:var(--ink);width:130px;}
+  .store-chip input:focus{outline:none;}
+  .store-chip button{border:none;background:#fff;color:var(--accent-dark);border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:13px;}
+  .plan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px;}
+  .recipe-card{border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;background:#fffefb;}
+  .recipe-card.locked{border-color:var(--accent);}
+  .recipe-card h4{margin:0 0 4px;font-size:15.5px;}
+  .recipe-card .meta{color:var(--sub);font-size:12px;margin-bottom:8px;}
+  .recipe-card .tag{display:inline-block;background:var(--check-bg);color:var(--check);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;margin-right:4px;}
+  .card-actions{display:flex;gap:6px;margin-top:10px;}
+  .card-actions button{flex:1;font-size:12px;padding:6px 4px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;}
+  .card-actions button.lock-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .recipe-detail{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;display:none;}
+  .recipe-detail.open{display:block;}
+  .recipe-detail ul{margin:4px 0 10px;padding-left:18px;}
+  .recipe-detail ol{margin:4px 0 0;padding-left:18px;}
+  .recipe-detail li{margin-bottom:4px;}
+  .view-toggle{background:none;border:none;color:var(--accent-dark);font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0;margin-top:8px;}
+  .shopping-store-select{margin-bottom:10px;}
+  .cat-block{margin-bottom:14px;}
+  .cat-head{display:flex;align-items:center;justify-content:space-between;background:#f4ede2;border-radius:8px;padding:6px 10px;margin-bottom:6px;}
+  .cat-head .cat-name{font-weight:700;font-size:13.5px;}
+  .aisle-edit{font-size:12px;color:var(--accent-dark);cursor:pointer;}
+  .ing-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 4px;font-size:13.5px;border-bottom:1px solid #f3ede2;}
+  .ing-row:last-child{border-bottom:none;}
+  .ing-row input[type=checkbox]{width:16px;height:16px;}
+  .ing-row.checked span{text-decoration:line-through;color:var(--sub);}
+  .store-search-results{margin-top:8px;}
+
+  /* ================= Suggest tab ================= */
+  .sug-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:20px;}
+  @media (max-width:720px){ .sug-grid{grid-template-columns:1fr;} }
+  .sug-card{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#fffefb;}
+  .sug-card .sug-title{font-weight:700;font-size:14px;margin-bottom:2px;}
+  .sug-card .sug-sub{color:var(--sub);font-size:12px;margin-bottom:8px;}
+  .sug-card .sug-stats{font-size:12.5px;color:var(--ink);margin-bottom:8px;}
+  .sug-card .sug-stats b{color:var(--accent-dark);}
+
+  /* ================= Feeling / Mood tab ================= */
+  .mood-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0 6px;}
+  .mood-card{border:1px solid var(--line);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;background:#fffefb;font-size:13px;}
+  .mood-card:hover{border-color:var(--accent);}
+  .mood-card.selected{border:2px solid var(--accent);background:var(--accent-bg);}
+  .mood-card .m-emoji{font-size:24px;display:block;margin-bottom:4px;}
+  .mood-card .m-desc{color:var(--sub);font-size:11px;margin-top:2px;line-height:1.3;}
+  .mood-result-card{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fffefb;text-align:center;max-width:460px;margin:18px auto 0;}
+  .mood-result-card .m-source{color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:6px;}
+  .mood-result-card h3{margin:0 0 4px;font-size:19px;}
+  .mood-result-card .m-sub{color:var(--sub);font-size:13px;margin-bottom:10px;}
+  .mood-result-card .m-stats{font-size:14px;margin-bottom:12px;}
+  .mood-result-card .m-stats b{color:var(--accent-dark);}
+  .mood-logic-box{background:#f4ede2;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#5a4b38;margin-top:14px;line-height:1.5;}
+
+  /* ================= Calorie Budget tab ================= */
+  .budget-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:10px;}
+  .budget-stat{background:#fffefb;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;}
+  .budget-stat .b-val{font-size:22px;font-weight:800;}
+  .budget-stat .b-label{color:var(--sub);font-size:12px;margin-top:2px;}
+  .budget-stat.remaining.green .b-val{color:var(--green);}
+  .budget-stat.remaining.orange .b-val{color:var(--orange);}
+  .budget-stat.remaining.red .b-val{color:var(--red);}
+  .foodlog-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 4px;font-size:13.5px;border-bottom:1px solid #f3ede2;}
+  .foodlog-row:last-child{border-bottom:none;}
+
+  /* ---- v2: verification + ingredient pictures ---- */
+  .verified-note{background:#e8f1e6;border-bottom:1px solid #c9dfc6;color:#2f5a35;font-size:12px;text-align:center;padding:5px 14px;}
+  .unv{display:inline-block;font-size:10px;font-weight:700;color:#8a6d1f;background:#fff4d6;border:1px solid #f0ddaa;border-radius:8px;padding:0 6px;margin-left:4px;vertical-align:middle;text-transform:lowercase;}
+  .est{display:inline-block;font-size:10px;font-weight:700;color:var(--check);background:var(--check-bg);border-radius:8px;padding:0 6px;margin-left:4px;}
+  .recipe-detail ul.ing-pics{list-style:none;padding-left:0;}
+  .ing-pics li{display:flex;align-items:center;gap:8px;}
+  .ing-thumb{flex:0 0 40px;width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;}
+  .ing-thumb img{width:100%;height:100%;object-fit:contain;}
+  .ing-thumb a{display:block;width:100%;height:100%;}
+  .pic-attrib{font-size:10.5px;color:var(--sub);margin:-4px 0 10px;}
+  .pic-attrib a{color:var(--sub);}
+  .foodlog-row .fl-name{font-weight:600;}
+  .foodlog-row .fl-meta{color:var(--sub);font-size:12px;}
+  /* ===== v3: cost, My Recipes, cook mode ===== */
+  .cost-chip{display:inline-block;font-weight:700;color:var(--accent);}
+  .card-actions button.cook-btn{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;}
+  .myrec-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+  .shop-total{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;background:var(--accent-bg);border-radius:10px;padding:10px 14px;margin:8px 0 12px;}
+  .shop-total b{font-size:20px;color:var(--accent-dark);font-variant-numeric:tabular-nums;}
+  .shop-total span{font-size:12.5px;color:var(--sub);}
+  #cook{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));}
+  #cook .ck-wrap{flex:1;min-height:0;width:100%;max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:12px;}
+  #cook .ck-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  #cook h2{margin:0;font-size:24px;line-height:1.15;}
+  #cook .ck-close{font-size:15px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink);}
+  #cook .ck-tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;}
+  #cook .ck-tabs button{flex:1;font-weight:700;font-size:15px;padding:10px;border:0;border-radius:9px;background:transparent;color:var(--sub);cursor:pointer;}
+  #cook .ck-tabs button[aria-selected="true"]{background:var(--accent);color:#fff;}
+  #cook .ck-gather{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+  #cook .ck-tots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  #cook .ck-tot{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;}
+  #cook .ck-tot small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);}
+  #cook .ck-tot b{display:block;font-size:24px;font-family:Georgia,serif;font-variant-numeric:tabular-nums;}
+  #cook .ck-tot span{font-size:12.5px;color:var(--sub);}
+  #cook ul.ck-ing{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+  #cook ul.ck-ing button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;font:inherit;font-size:15.5px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;}
+  #cook .ck-box{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--sub);display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px;}
+  #cook .ck-emoji{flex:none;font-size:22px;}
+  #cook .ck-name{flex:1;min-width:0;}
+  #cook .ck-cost{flex:none;font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums;}
+  #cook ul.ck-ing button[aria-pressed="true"]{opacity:.55;}
+  #cook ul.ck-ing button[aria-pressed="true"] .ck-box{background:var(--check);border-color:var(--check);}
+  #cook ul.ck-ing button[aria-pressed="true"] .ck-name{text-decoration:line-through;}
+  #cook .ck-note{font-size:12px;color:var(--sub);line-height:1.45;margin:0;}
+  #cook .ck-go{font-size:18px;font-weight:700;padding:15px;border:0;border-radius:14px;background:var(--accent);color:#fff;cursor:pointer;}
+  #cook .ck-steps{flex:1;min-height:0;display:flex;flex-direction:column;}
+  #cook .ck-stage{flex:1;min-height:0;position:relative;touch-action:pan-y;user-select:none;}
+  #cook .ck-card{position:absolute;inset:0;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .32s;}
+  #cook .ck-card.out-left{transform:translateX(-110%) rotate(-4deg);opacity:0;}
+  #cook .ck-card.out-right{transform:translateX(110%) rotate(4deg);opacity:0;}
+  #cook .ck-card.dragging{transition:none;}
+  #cook .ck-count{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);font-weight:700;}
+  #cook .ck-big{font-family:Georgia,serif;font-size:clamp(24px,6.5vw,36px);line-height:1.25;margin:0;}
+  #cook .ck-timer{align-self:flex-start;font-size:17px;font-weight:700;padding:12px 18px;border-radius:12px;border:2px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-variant-numeric:tabular-nums;}
+  #cook .ck-timer.running{background:var(--accent);color:#fff;}
+  #cook .ck-nav{display:flex;align-items:center;gap:10px;padding-top:12px;}
+  #cook .ck-nav button{font-size:16px;font-weight:700;padding:13px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;}
+  #cook .ck-nav button:disabled{opacity:.35;cursor:default;}
+  #cook .ck-nav .ck-next{flex:1;background:var(--accent);border-color:var(--accent);color:#fff;}
+  #cook .ck-dots{flex:1;display:flex;gap:5px;justify-content:center;flex-wrap:wrap;}
+  #cook .ck-dots i{width:7px;height:7px;border-radius:50%;background:var(--line);}
+  #cook .ck-dots i.on{background:var(--accent);width:18px;border-radius:4px;}
+  #cook .ck-hint{text-align:center;font-size:12px;color:var(--sub);margin:6px 0 0;}
+  #ckPill{position:fixed;z-index:1001;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--accent);color:#fff;font-weight:700;font-size:15px;padding:10px 14px;border-radius:999px;border:0;cursor:pointer;font-variant-numeric:tabular-nums;}
+  [hidden]{display:none!important;}
+  @media (prefers-reduced-motion: reduce){#cook .ck-card{transition:none;}}
+  /* ===== v4: Your Week ===== */
+  .wk-top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;}
+  .wk-top h3{margin:0;font-size:24px;}
+  .wk-top .wk-sub{color:var(--sub);font-size:13px;}
+  .wk-bar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--line);margin:10px 0 6px;}
+  .wk-bar i{display:block;height:100%;transition:width .3s;}
+  .b-home{background:var(--accent);} .b-out{background:var(--orange);} .b-none{background:var(--line);}
+  .wk-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--sub);margin-bottom:12px;}
+  .wk-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+  .wk-legend i.b-none{background:#d8cfbf;}
+  .wk-legend b{color:var(--ink);font-variant-numeric:tabular-nums;}
+  .wk-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .wk-tile{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fffefb;min-width:0;}
+  .wk-tile small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);}
+  .wk-tile b{display:block;font-size:22px;font-family:Georgia,serif;font-variant-numeric:tabular-nums;}
+  .wk-tile span{font-size:12px;color:var(--sub);}
+  .wk-tile.wk-strong{background:var(--accent-bg);border-color:var(--accent-bg);}
+  .wk-note{font-size:13.5px;line-height:1.5;margin:10px 0 4px;}
+  .wk-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0;}
+  .wk-controls label{font-size:13px;color:var(--sub);}
+  .wk-controls input{width:80px;}
+  .wk-grid{display:flex;flex-direction:column;gap:6px;}
+  .wk-head,.wk-row{display:grid;grid-template-columns:44px repeat(3,minmax(0,1fr));gap:6px;align-items:stretch;}
+  .wk-head span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);font-weight:700;padding-left:4px;}
+  .wk-day{font-weight:700;font-size:14px;align-self:center;}
+  .wk-cell{border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:6px 8px;background:#fffefb;display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .wk-cell.wk-home{border-left-color:var(--accent);} .wk-cell.wk-out{border-left-color:var(--orange);background:var(--orange-bg);} .wk-cell.wk-none{border-left-color:var(--line);}
+  .wk-cell select{width:100%;font-size:13px;padding:4px;border-radius:6px;border:1px solid var(--line);background:#fff;min-width:0;}
+  .wk-fixed{font-size:13px;font-weight:600;line-height:1.3;}
+  .wk-ml{display:none;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);font-weight:700;}
+  .wk-foot{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;}
+  .wk-foot button{font-size:12px;padding:3px 10px;border-radius:7px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;}
+  @media (max-width:640px){
+    .wk-tiles{grid-template-columns:1fr;}
+    .wk-head{display:none;}
+    .wk-row{grid-template-columns:1fr;border-top:1px solid var(--line);padding-top:8px;}
+    .wk-ml{display:block;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍽️ Weekly Table</h1>
+  <p>One place to eat smarter — whether you're grabbing fast food or cooking at home.</p>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="eatingout">🍔 Eating Out</button>
+    <button class="tab-btn" data-tab="cookingathome">🍳 Cooking at Home</button>
+    <button class="tab-btn" data-tab="suggest">🔎 Suggest a Meal</button>
+    <button class="tab-btn" data-tab="mood">🎲 Feeling…</button>
+    <button class="tab-btn" data-tab="budget">📊 Calorie Budget</button>
+  </div>
+</header>
+
+<div class="disclaimer">
+  ⚠️ <b>For informational purposes only</b> — not medical or nutrition advice. Always check ingredients against your own allergies and dietary needs, and consult a doctor or registered dietitian for personalized guidance.
+</div>
+<div class="verified-note">✓ Nutrition data verified Oct 2026; sources in audit (built-in recipes computed from USDA FoodData Central). Items tagged <span class="unv">unverified</span> come from live third-party data we could not check.</div>
+
+<main>
+
+<!-- ================= EATING OUT TAB ================= -->
+<div class="tab-panel active" id="tab-eatingout">
+
+  <section class="panel">
+    <h2>Compare Two Meals</h2>
+    <p class="hint">Build two orders from any of 31 chains (600+ once you add a Nutritionix key below) and see which one actually fits your goal.</p>
+    <div class="controls-row">
+      <label>Your weight (for the exercise estimate):</label>
+      <input type="number" id="weightInput" value="160" min="60" max="500">
+      <select id="weightUnit">
+        <option value="lb" selected>lb</option>
+        <option value="kg">kg</option>
+      </select>
+      <span style="color:var(--sub);">· Goal: <b>Weight loss / general healthy eating</b></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Settings</h2>
+    <p class="hint">Add a free Nutritionix account to search 600+ restaurant chains instead of just 31. This only widens the search box (adding items to a meal) — the browse dropdown and the Suggest tab's auto-scan still cover Nom's 31, since Nutritionix doesn't offer a "list this chain's whole menu" endpoint to scan. <a href="https://developer.nutritionix.com/signup" target="_blank">Get a free key →</a> Stored only in this browser.</p>
+    <div class="controls-row">
+      <input type="text" id="nixIdInput" placeholder="App ID" style="width:140px;">
+      <input type="password" id="nixKeyInput" placeholder="API Key" style="flex:1;min-width:180px;">
+      <button class="ghost-btn" id="saveNixBtn">Save</button>
+      <button class="ghost-btn" id="clearNixBtn">Remove</button>
+      <span id="nixKeyStatus" style="font-size:12.5px;color:var(--sub);"></span>
+    </div>
+  </section>
+
+  <div class="columns">
+    <div class="meal-col" id="col-A">
+      <h2><input class="meal-name-input" id="name-A" value="Meal A"></h2>
+      <select class="restaurant-select" id="restaurant-A"><option value="">Browse a restaurant menu…</option></select>
+      <div class="search-wrap">
+        <input class="search-input" id="search-A" placeholder="Or search any item (e.g. double cheeseburger)…" autocomplete="off">
+        <div class="search-results" id="results-A" style="display:none;"></div>
+      </div>
+      <ul class="meal-items" id="items-A"></ul>
+      <div class="subtotal"><span>Subtotal</span><b id="subtotal-A">0 cal</b></div>
+    </div>
+
+    <div class="vs-divider">VS</div>
+
+    <div class="meal-col" id="col-B">
+      <h2><input class="meal-name-input" id="name-B" value="Meal B"></h2>
+      <select class="restaurant-select" id="restaurant-B"><option value="">Browse a restaurant menu…</option></select>
+      <div class="search-wrap">
+        <input class="search-input" id="search-B" placeholder="Or search any item (e.g. double cheeseburger)…" autocomplete="off">
+        <div class="search-results" id="results-B" style="display:none;"></div>
+      </div>
+      <ul class="meal-items" id="items-B"></ul>
+      <div class="subtotal"><span>Subtotal</span><b id="subtotal-B">0 cal</b></div>
+    </div>
+  </div>
+
+  <div class="compare-row">
+    <button class="compare-btn" id="compareBtn" disabled>Compare Meals</button>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <div id="results">
+    <div class="verdict-banner" id="verdictBanner"></div>
+    <div class="simple-cards" id="simpleCards"></div>
+    <button class="toggle-details" id="toggleDetails">Show full nutrition breakdown ▾</button>
+    <div id="details-table"></div>
+    <div class="exercise-section">
+      <h3>🔥 Working it off</h3>
+      <div class="sub">Rough estimate of continuous exercise needed to burn off each meal, based on your weight above.</div>
+      <div class="ex-grid" id="exGrid"></div>
+      <div class="sub" style="margin-top:10px;">These are averages (MET-based estimates) — actual calorie burn varies by fitness level, intensity, and individual metabolism. Not a substitute for professional fitness or medical guidance.</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--sub);font-size:12px;">Nutrition data via <a href="https://nom.now" target="_blank" style="color:var(--sub);">Nom (nom.now)</a> and, if you add a key, Nutritionix <span class="unv">unverified</span>. Not affiliated with any restaurant chain or with Nom.</p>
+</div>
+
+<!-- ================= COOKING AT HOME TAB ================= -->
+<div class="tab-panel" id="tab-cookingathome">
+
+  <section class="panel">
+    <h2>Settings</h2>
+    <p class="hint">Add your own free Spoonacular API key to unlock more diets, thousands more recipes, and real nutrition info per recipe. <a href="https://spoonacular.com/food-api" target="_blank">Get a free key →</a> Your key is stored only in this browser — it's never sent anywhere but Spoonacular.</p>
+    <div class="controls-row">
+      <input type="password" id="spoonKeyInput" placeholder="Paste your Spoonacular API key" style="flex:1;min-width:220px;">
+      <button class="ghost-btn" id="saveKeyBtn">Save key</button>
+      <button class="ghost-btn" id="clearKeyBtn">Remove key</button>
+      <span id="keyStatus" style="font-size:12.5px;color:var(--sub);"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Your Stores</h2>
+    <p class="hint">Search for real stores near your zip code, or add one by hand. Save up to 3 — you can teach the app which aisle each grocery category is in at each one.</p>
+    <div class="controls-row">
+      <input type="text" id="zipInput" placeholder="Zip code" style="width:110px;">
+      <button class="ghost-btn" id="findStoresBtn">Find stores near me</button>
+      <button class="ghost-btn" id="addManualStoreBtn">+ Add manually</button>
+    </div>
+    <div class="status-msg" id="storeStatus"></div>
+    <div class="store-search-results" id="storeSearchResults"></div>
+    <div class="stores-row" id="storesRow"></div>
+  </section>
+
+  <section class="panel">
+    <h2>My Recipes</h2>
+    <p class="hint">Recipes you make over and over. Tap "Cook this" for the ingredient list with costs, then large step-by-step cards you swipe through.</p>
+    <div class="myrec-row" id="myRecipesRow"></div>
+  </section>
+
+  <section class="panel">
+    <h2>This Week's Plan</h2>
+    <p class="hint">Pick how many dinners you want and how many people you're feeding — we'll suggest simple, beginner-friendly recipes.</p>
+    <div class="controls-row">
+      <div><label>Dinners this week</label><select id="numMeals"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option></select></div>
+      <div><label>Servings</label><select id="servings">
+        <option value="1">1 person</option>
+        <option value="2">2 people</option>
+        <option value="3">3 people</option>
+        <option value="4" selected>4 people</option>
+        <option value="5">5 people</option>
+        <option value="6">6 people</option>
+        <option value="7">7 people</option>
+      </select></div>
+      <div><label>Diet</label><select id="dietFilter"></select></div>
+      <button class="primary-btn" id="generateBtn">Build my week</button>
+    </div>
+    <div class="status-msg" id="planStatus"></div>
+    <div class="plan-grid" id="planGrid"></div>
+  </section>
+  <section class="panel" id="weekPanel">
+    <h2>Your Week</h2>
+    <p class="hint">Every meal for the whole household: 3 meals a day, 7 days, times the number of people (set in "Servings" above). Dinners come from your plan; pick breakfasts and lunches here, or mark any meal as eaten out.</p>
+    <div class="wk-top"><h3 id="wkTitle"></h3><span class="wk-sub" id="wkSub"></span></div>
+    <div class="wk-bar" id="wkBar"></div>
+    <div class="wk-legend" id="wkLegend"></div>
+    <div class="wk-tiles" id="wkTiles"></div>
+    <p class="wk-note" id="wkNote"></p>
+    <div class="wk-controls">
+      <button class="ghost-btn" id="wkFillBL">Fill breakfasts and lunches</button>
+      <button class="ghost-btn" id="wkRestOut">Mark the rest as eating out</button>
+      <button class="ghost-btn" id="wkClear">Clear</button>
+      <label for="wkOutPrice">Eating out costs about $</label><input type="number" id="wkOutPrice" min="0" step="0.5" value="10"><label>per person per meal</label>
+    </div>
+    <div class="wk-grid" id="wkGrid"></div>
+  </section>
+
+
+  <section class="panel" id="shoppingSection" style="display:none;">
+    <h2>Shopping List</h2>
+    <p class="hint">Combined ingredients for everything in your plan. Pick a store to see (or set) which aisle each category is in.</p>
+    <div class="shopping-store-select">
+      <label style="color:var(--sub);font-size:13px;margin-right:6px;">Shopping at:</label>
+      <select id="activeStoreSelect"></select>
+    </div>
+    <div id="shoppingList"></div>
+  </section>
+
+  <p style="text-align:center;color:var(--sub);font-size:12px;">Store locations via OpenStreetMap contributors. Recipes and nutrition, when a Spoonacular key is set, via <a href="https://spoonacular.com" target="_blank" style="color:var(--sub);">Spoonacular</a>.</p>
+</div>
+
+<!-- ================= SUGGEST TAB ================= -->
+<div class="tab-panel" id="tab-suggest">
+
+  <section class="panel">
+    <h2>Suggest a Meal</h2>
+    <p class="hint">Tell us roughly what you're after and we'll check both fast food menus and recipes for matches.</p>
+    <div class="controls-row">
+      <div><label>Around this many calories</label><input type="number" id="sugCalories" value="500" min="100" max="3000" step="10"></div>
+      <div><label>At least this much protein (g)</label><input type="number" id="sugProtein" value="20" min="0" max="200" step="1"></div>
+      <button class="primary-btn" id="sugFindBtn">Find meals</button>
+    </div>
+    <button class="view-toggle" id="sugAdvToggle" type="button">More filters (fiber, sodium, sugar) ▾</button>
+    <div class="controls-row" id="sugAdvRow" style="display:none;">
+      <div><label>At least this much fiber (g)</label><input type="number" id="sugFiber" placeholder="any" min="0" max="60" step="1"></div>
+      <div><label>At most this much sodium (mg)</label><input type="number" id="sugSodium" placeholder="any" min="0" max="5000" step="50"></div>
+      <div><label>At most this much sugar (g)</label><input type="number" id="sugSugar" placeholder="any" min="0" max="150" step="1"></div>
+    </div>
+    <div class="status-msg" id="sugStatus"></div>
+  </section>
+
+  <div class="sug-grid">
+    <section class="panel" style="margin-bottom:0;">
+      <h2>🍔 Eating Out matches</h2>
+      <div id="sugEatingOutResults"><div class="empty-note">Enter your targets above and click "Find meals".</div></div>
+    </section>
+    <section class="panel" style="margin-bottom:0;">
+      <h2>🍳 Cooking at Home matches</h2>
+      <div id="sugHomeResults"><div class="empty-note">Enter your targets above and click "Find meals".</div></div>
+    </section>
+  </div>
+
+</div>
+
+<!-- ================= MOOD / FEELING TAB ================= -->
+<div class="tab-panel" id="tab-mood">
+  <section class="panel">
+    <h2>How are you feeling?</h2>
+    <p class="hint">Pick a mood and a source, and we'll pick one meal for you. Each mood uses a different, plain-language rule — expand "How this pick was made" below to see exactly why you got that result.</p>
+    <div class="mood-grid" id="moodGrid"></div>
+    <div class="controls-row">
+      <div><label>Where from</label><select id="moodSource">
+        <option value="either">Surprise me — either</option>
+        <option value="eatingout">Eating out</option>
+        <option value="cookingathome">Cooking at home</option>
+      </select></div>
+      <button class="primary-btn" id="moodPickBtn">Pick my meal</button>
+    </div>
+    <div class="status-msg" id="moodStatus"></div>
+  </section>
+  <div id="moodResult"></div>
+  <p style="text-align:center;color:var(--sub);font-size:12px;">"Feeling" picks pull from the same 31-chain menu scan used in Suggest a Meal, and from Spoonacular (if you've added a key) or the built-in recipe list otherwise.</p>
+</div>
+
+<!-- ================= CALORIE BUDGET TAB ================= -->
+<div class="tab-panel" id="tab-budget">
+  <section class="panel">
+    <h2>Your daily numbers</h2>
+    <p class="hint">⚠️ Honest limitation: a web page like this can't directly read your phone's step counter, Apple Health, or Google Fit — that requires a native app with those platforms' permission, which is beyond what this tool can do. Enter your steps by hand (copy them from your phone) and this will estimate a daily calorie budget. This is a rough estimate, not medical advice — talk to a doctor or dietitian for personalized guidance.</p>
+    <div class="controls-row">
+      <div><label>Weight</label><input type="number" id="bWeight" value="160" min="60" max="500" style="width:80px;"></div>
+      <div><select id="bWeightUnit"><option value="lb" selected>lb</option><option value="kg">kg</option></select></div>
+      <div><label>Height</label><input type="number" id="bHeightFt" value="5" min="3" max="8" style="width:55px;" placeholder="ft"> ft <input type="number" id="bHeightIn" value="8" min="0" max="11" style="width:55px;" placeholder="in"> in</div>
+      <div><label>Age</label><input type="number" id="bAge" value="30" min="13" max="100" style="width:60px;"></div>
+      <div><label>Sex (for the BMR formula)</label><select id="bSex"><option value="male">Male</option><option value="female">Female</option></select></div>
+    </div>
+    <div class="controls-row">
+      <div><label>Activity level</label><select id="bActivity">
+        <option value="sedentary" selected>Sedentary (mostly sitting — I'll log steps separately)</option>
+        <option value="light">Lightly active</option>
+        <option value="moderate">Moderately active</option>
+        <option value="active">Very active</option>
+      </select></div>
+    </div>
+    <p class="hint" style="margin-top:6px;">Tip: leave activity level at "Sedentary" and log your actual steps below — that avoids double-counting activity you didn't necessarily do. If you pick a higher activity level, steps are shown for reference only and aren't added on top.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Today</h2>
+    <div class="controls-row">
+      <div><label>Steps so far today</label><input type="number" id="bSteps" value="0" min="0" max="100000" step="500" style="width:100px;"></div>
+      <button class="primary-btn" id="bUpdateBtn">Update</button>
+    </div>
+    <div class="budget-summary" id="budgetSummary"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Food logged today</h2>
+    <p class="hint">Add anything you've actually eaten today. Meals you add from Eating Out or Cooking at Home also show up here automatically via their "+ Log this" buttons.</p>
+    <div class="controls-row">
+      <input type="text" id="flDesc" placeholder="What did you eat?" style="flex:1;min-width:160px;">
+      <input type="number" id="flCal" placeholder="Calories" style="width:100px;">
+      <input type="number" id="flProtein" placeholder="Protein g (optional)" style="width:150px;">
+      <button class="ghost-btn" id="flAddBtn">+ Add</button>
+    </div>
+    <div id="foodLogList"></div>
+    <button class="view-toggle" id="flClearBtn" type="button">Clear today's log</button>
+  </section>
+
+  <p style="text-align:center;color:var(--sub);font-size:12px;">Estimates use the Mifflin-St Jeor BMR formula and a common walking-calorie approximation. Individual metabolism varies — this is informational only.</p>
+</div>
+
+</main>
+
+<footer>
+  Recipes are general suggestions and quantities/nutrition are estimates — always check for allergens and adjust to taste. Aisle locations are whatever <i>you've</i> told the app for each store. Restaurant nutrition values may vary by location and customization. Weekly Table is an independent tool, not affiliated with any restaurant chain, Nom, Spoonacular, or OpenStreetMap.
+</footer>
+
+<div id="cook" hidden role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+  <div class="ck-wrap">
+    <div class="ck-top"><h2 id="ckTitle"></h2><button class="ck-close" id="ckClose">Close</button></div>
+    <div class="ck-tabs" role="tablist"><button id="ckTabGather" role="tab" aria-selected="true">Gather</button><button id="ckTabSteps" role="tab" aria-selected="false">Steps</button></div>
+    <div class="ck-gather" id="ckGather">
+      <div class="ck-tots" id="ckTots"></div>
+      <p class="ck-note">Tap each item as you set it on the counter.</p>
+      <ul class="ck-ing" id="ckIng"></ul>
+      <p class="ck-note">Cost counts only what the recipe uses, not the full package. Prices are September 2026 averages for the South from the Bureau of Labor Statistics where available; items marked "est" are typical store-brand prices. Your store will vary.</p>
+      <button class="ck-go" id="ckStart">Start cooking</button>
+    </div>
+    <div class="ck-steps" id="ckSteps" hidden>
+      <div class="ck-stage" id="ckStage"></div>
+      <div class="ck-nav"><button id="ckPrev">Back</button><div class="ck-dots" id="ckDots"></div><button class="ck-next" id="ckNext">Next</button></div>
+      <p class="ck-hint">Swipe left for the next step</p>
+    </div>
+  </div>
+</div>
+<button id="ckPill" hidden></button>
+<script>
+function $(id){ return document.getElementById(id); }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================
+   EATING OUT TAB  (Fast Food Faceoff)
+   ============================================================ */
+const NOM_API = "https://nom.now/api/v1";
+
+const RESTAURANTS = [
+  {slug:'burger-king', name:'Burger King', cat:'Burgers'},
+  {slug:'carls-jr', name:"Carl's Jr.", cat:'Burgers'},
+  {slug:'culvers', name:"Culver's", cat:'Burgers'},
+  {slug:'dairy-queen', name:'Dairy Queen', cat:'Burgers'},
+  {slug:'five-guys', name:'Five Guys', cat:'Burgers'},
+  {slug:'in-n-out', name:'In-N-Out', cat:'Burgers'},
+  {slug:'jack-in-the-box', name:'Jack in the Box', cat:'Burgers'},
+  {slug:'mcdonalds', name:"McDonald's", cat:'Burgers'},
+  {slug:'shake-shack', name:'Shake Shack', cat:'Burgers'},
+  {slug:'sonic', name:'Sonic', cat:'Burgers'},
+  {slug:'the-habit', name:'The Habit Burger Grill', cat:'Burgers'},
+  {slug:'wendys', name:"Wendy's", cat:'Burgers'},
+  {slug:'whataburger', name:'Whataburger', cat:'Burgers'},
+  {slug:'chick-fil-a', name:'Chick-fil-A', cat:'Chicken'},
+  {slug:'el-pollo-loco', name:'El Pollo Loco', cat:'Chicken'},
+  {slug:'kfc', name:'KFC', cat:'Chicken'},
+  {slug:'popeyes', name:'Popeyes', cat:'Chicken'},
+  {slug:'raising-canes', name:"Raising Cane's", cat:'Chicken'},
+  {slug:'wingstop', name:'Wingstop', cat:'Chicken'},
+  {slug:'chipotle', name:'Chipotle', cat:'Mexican'},
+  {slug:'del-taco', name:'Del Taco', cat:'Mexican'},
+  {slug:'taco-bell', name:'Taco Bell', cat:'Mexican'},
+  {slug:'jersey-mikes', name:"Jersey Mike's", cat:'Sandwiches & Subs'},
+  {slug:'jimmy-johns', name:"Jimmy John's", cat:'Sandwiches & Subs'},
+  {slug:'panera', name:'Panera Bread', cat:'Sandwiches & Subs'},
+  {slug:'subway', name:'Subway', cat:'Sandwiches & Subs'},
+  {slug:'dunkin', name:"Dunkin'", cat:'Coffee & Breakfast'},
+  {slug:'ihop', name:'IHOP', cat:'Coffee & Breakfast'},
+  {slug:'starbucks', name:'Starbucks', cat:'Coffee & Breakfast'},
+  {slug:'panda-express', name:'Panda Express', cat:'Bowls & More'},
+  {slug:'sweetgreen', name:'Sweetgreen', cat:'Bowls & More'},
+];
+
+const eoState = {
+  A: { items: new Map() },
+  B: { items: new Map() },
+  fullNutrition: {}
+};
+const menuCache = {};
+const searchCacheEO = {};
+
+['A','B'].forEach(side=>{
+  const sel = $('restaurant-'+side);
+  const groups = {};
+  RESTAURANTS.forEach(r=>{ (groups[r.cat] = groups[r.cat]||[]).push(r); });
+  Object.keys(groups).forEach(cat=>{
+    const og = document.createElement('optgroup');
+    og.label = cat;
+    groups[cat].forEach(r=>{
+      const opt = document.createElement('option');
+      opt.value = r.slug; opt.textContent = r.name;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+  sel.addEventListener('change', ()=> onRestaurantChange(side));
+});
+
+async function nomApiGet(path){
+  const res = await fetch(NOM_API + path);
+  if(res.status === 429) throw new Error('RATE_LIMIT');
+  if(!res.ok) throw new Error('HTTP_'+res.status);
+  return res.json();
+}
+
+async function onRestaurantChange(side){
+  const slug = $('restaurant-'+side).value;
+  const box = $('results-'+side);
+  const searchInput = $('search-'+side);
+  const restMeta = RESTAURANTS.find(r=>r.slug===slug);
+  searchInput.placeholder = restMeta ? `Search ${restMeta.name}'s menu…` : 'Or search any item (e.g. double cheeseburger)…';
+  if(!slug){ box.style.display='none'; return; }
+  setEOStatus('Loading menu…');
+  try{
+    let items = menuCache[slug];
+    if(!items){
+      const data = await nomApiGet('/restaurant/'+slug);
+      items = data.items;
+      menuCache[slug] = items;
+    }
+    renderSearchResults(side, items.slice(0, 40), true);
+    setEOStatus('');
+  }catch(e){
+    setEOStatus('Could not load that menu. ' + friendlyErrorEO(e), true);
+  }
+}
+
+function friendlyErrorEO(e){
+  if(e.message === 'RATE_LIMIT') return 'Too many requests to the nutrition database — wait about a minute and try again.';
+  return 'Check your internet connection and try again.';
+}
+function setEOStatus(msg, isError){
+  const el = $('statusMsg');
+  el.textContent = msg || '';
+  el.className = 'status-msg' + (isError ? ' error' : '');
+}
+
+let eoSearchTimers = {A:null, B:null};
+['A','B'].forEach(side=>{
+  const input = $('search-'+side);
+  input.addEventListener('input', ()=>{
+    clearTimeout(eoSearchTimers[side]);
+    const q = input.value.trim();
+    if(q.length < 2){ $('results-'+side).style.display='none'; return; }
+    eoSearchTimers[side] = setTimeout(()=> doSearchEO(side, q), 300);
+  });
+  input.addEventListener('focus', ()=>{
+    if(input.value.trim().length>=2) $('results-'+side).style.display='block';
+  });
+  document.addEventListener('click', (ev)=>{
+    if(!ev.target.closest('#col-'+side)) $('results-'+side).style.display='none';
+  });
+});
+
+const LS_NIX_ID = 'wt_nix_id';
+const LS_NIX_KEY = 'wt_nix_key';
+function getNixCreds(){
+  const id = (localStorage.getItem(LS_NIX_ID)||'').trim();
+  const key = (localStorage.getItem(LS_NIX_KEY)||'').trim();
+  return (id && key) ? {id, key} : null;
+}
+$('nixIdInput').value = localStorage.getItem(LS_NIX_ID) || '';
+$('nixKeyInput').value = localStorage.getItem(LS_NIX_KEY) || '';
+updateNixStatus();
+$('saveNixBtn').addEventListener('click', ()=>{
+  localStorage.setItem(LS_NIX_ID, $('nixIdInput').value.trim());
+  localStorage.setItem(LS_NIX_KEY, $('nixKeyInput').value.trim());
+  updateNixStatus();
+});
+$('clearNixBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(LS_NIX_ID);
+  localStorage.removeItem(LS_NIX_KEY);
+  $('nixIdInput').value=''; $('nixKeyInput').value='';
+  updateNixStatus();
+});
+function updateNixStatus(){
+  $('nixKeyStatus').textContent = getNixCreds() ? '✓ Searching 600+ chains' : 'No key yet — searching Nom\'s 31 chains only';
+}
+
+const NIX_ATTR = { calories:208, protein:203, total_fat:204, saturated_fat:606, sodium:307, total_carbs:205, dietary_fiber:291, sugars:269 };
+function nixAttrValue(fullNutrients, attrId){
+  const n = (fullNutrients||[]).find(x=>x.attr_id===attrId);
+  return n ? Math.round(n.value) : 0;
+}
+function nixToNutrition(fullNutrients){
+  const out = {};
+  Object.keys(NIX_ATTR).forEach(k=> out[k] = nixAttrValue(fullNutrients, NIX_ATTR[k]));
+  return out;
+}
+
+async function searchNutritionix(q){
+  const creds = getNixCreds();
+  if(!creds) return [];
+  const res = await fetch('https://trackapi.nutritionix.com/v2/search/instant?query=' + encodeURIComponent(q) + '&branded=true&common=false', {
+    headers: { 'x-app-id': creds.id, 'x-app-key': creds.key }
+  });
+  if(!res.ok) return [];
+  const data = await res.json();
+  return (data.branded||[]).slice(0,10).map(b=>({
+    id: 'nix-'+b.nix_item_id,
+    name: b.food_name,
+    restaurant: b.brand_name,
+    category: 'Nutritionix',
+    calories: Math.round(b.nf_calories||0),
+    protein: null,
+    grade: null,
+    source: 'nutritionix'
+  }));
+}
+
+async function resolveNixNutrition(id){
+  if(eoState.fullNutrition[id]) return;
+  const creds = getNixCreds();
+  if(!creds) return;
+  const nixId = id.replace(/^nix-/, '');
+  try{
+    const res = await fetch('https://trackapi.nutritionix.com/v2/search/item?nix_item_id=' + encodeURIComponent(nixId), {
+      headers: { 'x-app-id': creds.id, 'x-app-key': creds.key }
+    });
+    if(!res.ok) return;
+    const data = await res.json();
+    const food = (data.foods||[])[0];
+    if(food){
+      eoState.fullNutrition[id] = nixToNutrition(food.full_nutrients);
+    }
+  }catch(e){ /* leave unresolved; compare step will just show 0s for this item */ }
+}
+
+async function doSearchEO(side, q){
+  const restSlug = $('restaurant-'+side).value;
+  const key = (restSlug || 'all') + '|' + q.toLowerCase();
+  try{
+    let results = searchCacheEO[key];
+    if(!results){
+      let path = '/search?q=' + encodeURIComponent(q) + '&limit=10';
+      if(restSlug) path += '&restaurant=' + encodeURIComponent(restSlug);
+      const nomPromise = nomApiGet(path).then(data=>data.results).catch(()=>[]);
+      const nixPromise = restSlug ? Promise.resolve([]) : searchNutritionix(q).catch(()=>[]);
+      const [nomResults, nixResults] = await Promise.all([nomPromise, nixPromise]);
+      results = [...nomResults, ...nixResults];
+      searchCacheEO[key] = results;
+    }
+    renderSearchResults(side, results, false);
+  }catch(e){
+    setEOStatus(friendlyErrorEO(e), true);
+  }
+}
+
+function renderSearchResults(side, items, isMenuBrowse){
+  const box = $('results-'+side);
+  if(!items || !items.length){
+    box.innerHTML = '<div class="empty-note" style="padding:8px;">No matches found.</div>';
+    box.style.display='block';
+    return;
+  }
+  box.innerHTML = '';
+  items.forEach(it=>{
+    const restName = it.restaurant && it.restaurant.name ? it.restaurant.name : (typeof it.restaurant === 'string' ? it.restaurant : '');
+    const row = document.createElement('div');
+    row.className = 'item';
+    row.innerHTML = `<div><div class="r-name">${escapeHtml(it.name)}</div><div class="r-sub">${escapeHtml(restName)}${it.category? ' · '+escapeHtml(it.category):''}</div></div><div class="r-cal">${it.calories} cal</div>`;
+    row.addEventListener('click', ()=>{
+      addItemEO(side, it);
+      box.style.display='none';
+      if(!isMenuBrowse){ $('search-'+side).value=''; }
+    });
+    box.appendChild(row);
+  });
+  box.style.display='block';
+}
+
+function addItemEO(side, item){
+  const map = eoState[side].items;
+  const restName = item.restaurant && item.restaurant.name ? item.restaurant.name : (typeof item.restaurant === 'string' ? item.restaurant : '');
+  if(map.has(item.id)){
+    map.get(item.id).qty += 1;
+  } else {
+    map.set(item.id, { id:item.id, name:item.name, restaurant:restName, category:item.category, calories:item.calories, protein:item.protein, grade:item.grade, qty:1 });
+  }
+  renderMealList(side);
+  ['A','B'].forEach(s=> $('results-'+s).style.display='none');
+  if(item.id && item.id.startsWith('nix-')){
+    setEOStatus('Fetching full nutrition for '+item.name+'…');
+    resolveNixNutrition(item.id).then(()=>{
+      const n = eoState.fullNutrition[item.id];
+      if(n){
+        const entry = map.get(item.id);
+        if(entry){ entry.calories = n.calories; entry.protein = n.protein; renderMealList(side); }
+      }
+      setEOStatus('');
+    });
+  }
+}
+
+function changeQtyEO(side, id, delta){
+  const map = eoState[side].items;
+  const entry = map.get(id);
+  if(!entry) return;
+  entry.qty += delta;
+  if(entry.qty <= 0) map.delete(id);
+  renderMealList(side);
+}
+function removeItemEO(side, id){
+  eoState[side].items.delete(id);
+  renderMealList(side);
+}
+
+function renderMealList(side){
+  const ul = $('items-'+side);
+  ul.innerHTML = '';
+  let calTotal = 0;
+  eoState[side].items.forEach(entry=>{
+    calTotal += entry.calories * entry.qty;
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <div class="mi-info"><b>${escapeHtml(entry.name)}</b><span>${escapeHtml(entry.restaurant||'')} · ${entry.calories} cal each</span></div>
+      <div class="qty-ctrl">
+        <button data-act="dec">−</button>
+        <span>${entry.qty}</span>
+        <button data-act="inc">+</button>
+        <button class="remove-btn" data-act="rm">✕</button>
+      </div>`;
+    li.querySelector('[data-act=dec]').onclick = ()=> changeQtyEO(side, entry.id, -1);
+    li.querySelector('[data-act=inc]').onclick = ()=> changeQtyEO(side, entry.id, 1);
+    li.querySelector('[data-act=rm]').onclick = ()=> removeItemEO(side, entry.id);
+    ul.appendChild(li);
+  });
+  $('subtotal-'+side).textContent = calTotal + ' cal';
+  $('compareBtn').disabled = !(eoState.A.items.size > 0 && eoState.B.items.size > 0);
+  $('results').style.display = 'none';
+}
+
+$('compareBtn').addEventListener('click', runComparison);
+$('toggleDetails').addEventListener('click', ()=>{
+  const el = $('details-table');
+  const btn = $('toggleDetails');
+  const show = el.style.display !== 'block';
+  el.style.display = show ? 'block' : 'none';
+  btn.textContent = show ? 'Hide full nutrition breakdown ▴' : 'Show full nutrition breakdown ▾';
+});
+
+async function runComparison(){
+  setEOStatus('Crunching the numbers…');
+  $('compareBtn').disabled = true;
+  try{
+    const idsA = [...eoState.A.items.keys()];
+    const idsB = [...eoState.B.items.keys()];
+    const allIds = [...new Set([...idsA, ...idsB])];
+    await fetchFullNutrition(allIds);
+    const totalsA = sumNutritionEO('A');
+    const totalsB = sumNutritionEO('B');
+    const missing = totalsA.missingCount + totalsB.missingCount;
+    renderVerdict(totalsA, totalsB);
+    renderSimpleCards(totalsA, totalsB);
+    renderDetailsTable(totalsA, totalsB);
+    renderExercise(totalsA, totalsB);
+    $('results').style.display = 'block';
+    $('results').scrollIntoView({behavior:'smooth', block:'start'});
+    setEOStatus(missing ? `Heads up: full nutrition couldn't be loaded for ${missing} item(s), so those totals are too low — treat this comparison with caution.` : '', !!missing);
+  }catch(e){
+    setEOStatus(friendlyErrorEO(e), true);
+  }finally{
+    $('compareBtn').disabled = !(eoState.A.items.size > 0 && eoState.B.items.size > 0);
+  }
+}
+
+async function fetchFullNutrition(ids){
+  // v2 fix: Nutritionix items ('nix-…') are not in Nom — sending them to Nom's /compare made the whole comparison fail.
+  const nixIds = ids.filter(id => String(id).startsWith('nix-') && !eoState.fullNutrition[id]);
+  await Promise.all(nixIds.map(resolveNixNutrition));
+  const need = ids.filter(id => !String(id).startsWith('nix-') && !eoState.fullNutrition[id]);
+  for(let i=0; i<need.length; i+=10){
+    const chunk = need.slice(i, i+10);
+    const data = await nomApiGet('/compare?ids=' + chunk.map(encodeURIComponent).join(','));
+    data.items.forEach(it=>{ eoState.fullNutrition[it.id] = it.nutrition; });
+  }
+}
+
+const NUTR_KEYS = ['calories','total_fat','saturated_fat','sodium','total_carbs','dietary_fiber','sugars','protein'];
+
+function sumNutritionEO(side){
+  const totals = {calories:0,total_fat:0,saturated_fat:0,sodium:0,total_carbs:0,dietary_fiber:0,sugars:0,protein:0};
+  let missingCount = 0;
+  eoState[side].items.forEach(entry=>{
+    const n = eoState.fullNutrition[entry.id];
+    if(!n){ missingCount++; return; }
+    NUTR_KEYS.forEach(k=>{ totals[k] += (n[k]||0) * entry.qty; });
+  });
+  totals.missingCount = missingCount;
+  totals.name = $('name-'+side).value || ('Meal '+side);
+  totals.itemsSummary = [...eoState[side].items.values()]
+    .map(e => e.qty > 1 ? `${e.qty}× ${e.name}` : e.name)
+    .join(', ');
+  return totals;
+}
+
+const LOWER_BETTER = { calories:[650,900], sodium:[700,1400], saturated_fat:[6,13], sugars:[12,25] };
+const HIGHER_BETTER = { protein:[15,25], dietary_fiber:[3,6] };
+
+function ratingFor(key, value){
+  if(LOWER_BETTER[key]){
+    const [g,o] = LOWER_BETTER[key];
+    return value<=g ? 'green' : (value<=o ? 'orange' : 'red');
+  }
+  if(HIGHER_BETTER[key]){
+    const [o,g] = HIGHER_BETTER[key];
+    return value>=g ? 'green' : (value>=o ? 'orange' : 'red');
+  }
+  return 'orange';
+}
+const RATING_POINTS = {green:2, orange:1, red:0};
+
+function scoreMeal(totals){
+  const keys = ['calories','sodium','saturated_fat','sugars','protein','dietary_fiber'];
+  let score = 0;
+  keys.forEach(k=> score += RATING_POINTS[ratingFor(k, totals[k])]);
+  return score;
+}
+function overallGrade(score){
+  if(score>=10) return 'green';
+  if(score>=6) return 'orange';
+  return 'red';
+}
+const GRADE_LABEL = {green:'Great pick', orange:'Okay in moderation', red:'Not great for your goal'};
+
+function renderVerdict(totA, totB){
+  const scoreA = scoreMeal(totA), scoreB = scoreMeal(totB);
+  const banner = $('verdictBanner');
+  let winner, loser, winScore;
+  if(scoreA === scoreB && Math.abs(totA.calories-totB.calories) < 20){
+    banner.className = 'verdict-banner tie';
+    banner.innerHTML = `<div class="badge">Verdict</div><h3>🤝 It's basically a tie</h3>
+      <div class="verdict-items"><b>${escapeHtml(totA.name)}:</b> ${escapeHtml(totA.itemsSummary)} &nbsp;·&nbsp; <b>${escapeHtml(totB.name)}:</b> ${escapeHtml(totB.itemsSummary)}</div>
+      <p>These two meals are nutritionally very close — pick whichever you're craving.</p>`;
+    return;
+  }
+  if(scoreA > scoreB || (scoreA===scoreB && totA.calories < totB.calories)){
+    winner=totA; loser=totB; winScore=scoreA;
+  } else {
+    winner=totB; loser=totA; winScore=scoreB;
+  }
+  const reason = buildReason(winner, loser);
+  const grade = overallGrade(winScore);
+  banner.className = 'verdict-banner ' + grade;
+  banner.innerHTML = `<div class="badge">Verdict</div><h3>🏆 ${escapeHtml(winner.name)} is the better choice for weight loss / healthy eating</h3>
+    <div class="verdict-items">${escapeHtml(winner.itemsSummary)}</div>
+    <p>${reason}</p>`;
+}
+
+function buildReason(winner, loser){
+  const diffs = [];
+  const push = (label, key, unit, lowerBetter, scale)=>{
+    const d = winner[key] - loser[key];
+    const favorable = lowerBetter ? d < 0 : d > 0;
+    if(!favorable) return;
+    const mag = Math.abs(d) / scale;
+    diffs.push({text: `${Math.abs(Math.round(d))}${unit} ${lowerBetter? 'less':'more'} ${label}`, mag});
+  };
+  push('calories', 'calories', '', true, 100);
+  push('sodium', 'sodium', 'mg', true, 200);
+  push('protein', 'protein', 'g', false, 5);
+  push('saturated fat', 'saturated_fat', 'g', true, 3);
+  push('sugar', 'sugars', 'g', true, 5);
+  push('fiber', 'dietary_fiber', 'g', false, 2);
+  diffs.sort((a,b)=> b.mag - a.mag);
+  const top = diffs.slice(0,3).map(d=>d.text);
+  if(top.length === 0) return `${escapeHtml(winner.name)} edges it out overall, though the two meals are fairly close.`;
+  return `${escapeHtml(winner.name)} has ` + top.join(', ') + ' — a better fit for that goal.';
+}
+
+function renderSimpleCards(totA, totB){
+  const scoreA = scoreMeal(totA), scoreB = scoreMeal(totB);
+  const winnerIsA = scoreA > scoreB || (scoreA===scoreB && totA.calories<=totB.calories);
+  const wrap = $('simpleCards');
+  wrap.innerHTML = '';
+  [[totA, scoreA, winnerIsA], [totB, scoreB, !winnerIsA]].forEach(([tot, score, isWinner])=>{
+    const grade = overallGrade(score);
+    const card = document.createElement('div');
+    card.className = 'simple-card' + (isWinner ? ' winner' : '');
+    card.innerHTML = `
+      ${isWinner ? '<div class="crown">BETTER CHOICE</div>' : ''}
+      <h4>${escapeHtml(tot.name)}</h4>
+      <div class="items-list">${escapeHtml(tot.itemsSummary)}</div>
+      <div class="light ${grade}">${grade==='green'?'✓':grade==='orange'?'!':'✕'}</div>
+      <div class="grade-label">${GRADE_LABEL[grade]}</div>
+      <div class="cal">${Math.round(tot.calories)} <span>cal</span></div>
+      <div class="grade-label">${Math.round(tot.protein)}g protein · ${Math.round(tot.sodium)}mg sodium</div>
+      <button class="ghost-btn" data-act="log" style="margin-top:8px;padding:5px 12px;font-size:12px;">+ Log this to today's food</button>
+    `;
+    card.querySelector('[data-act=log]').addEventListener('click', ()=>{
+      logFood(tot.name + ' — ' + tot.itemsSummary, Math.round(tot.calories), Math.round(tot.protein));
+    });
+    wrap.appendChild(card);
+  });
+}
+
+const METRIC_META = [
+  {key:'calories', label:'Calories', unit:''},
+  {key:'protein', label:'Protein', unit:'g'},
+  {key:'total_fat', label:'Total Fat', unit:'g'},
+  {key:'saturated_fat', label:'Saturated Fat', unit:'g'},
+  {key:'sodium', label:'Sodium', unit:'mg'},
+  {key:'total_carbs', label:'Total Carbs', unit:'g'},
+  {key:'dietary_fiber', label:'Fiber', unit:'g'},
+  {key:'sugars', label:'Sugars', unit:'g'},
+];
+
+function renderDetailsTable(totA, totB){
+  const box = $('details-table');
+  let rows = '';
+  METRIC_META.forEach(m=>{
+    const vA = totA[m.key], vB = totB[m.key];
+    const rA = (LOWER_BETTER[m.key]||HIGHER_BETTER[m.key]) ? ratingFor(m.key, vA) : null;
+    const rB = (LOWER_BETTER[m.key]||HIGHER_BETTER[m.key]) ? ratingFor(m.key, vB) : null;
+    rows += `<tr>
+      <td class="metric-name">${m.label}</td>
+      <td>${rA ? `<span class="chip ${rA}">${Math.round(vA)}${m.unit}</span>` : Math.round(vA)+m.unit}</td>
+      <td>${rB ? `<span class="chip ${rB}">${Math.round(vB)}${m.unit}</span>` : Math.round(vB)+m.unit}</td>
+    </tr>`;
+  });
+  box.innerHTML = `<table>
+    <thead><tr><th>Metric</th><th>${escapeHtml(totA.name)}</th><th>${escapeHtml(totB.name)}</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="sub" style="margin-top:10px;color:var(--sub);font-size:12px;">Colors reflect a single meal's share of typical daily targets (green = well within range, orange = moderate, red = high) — not full nutrition advice.</div>`;
+}
+
+const ACTIVITIES = [
+  {name:'Walking', emoji:'🚶', met:4.8, desc:'brisk, 3.5 mph'},   // 2024 Compendium code 17200
+  {name:'Jogging', emoji:'🏃', met:9.3, desc:'6 mph pace'},        // 2024 Compendium code 12050
+  {name:'Cycling', emoji:'🚴', met:8.0, desc:'moderate, 12–14 mph'}, // 2024 Compendium code 01030
+  {name:'Swimming', emoji:'🏊', met:5.8, desc:'moderate laps'},     // 2024 Compendium code 18292
+];
+
+function getWeightKgEO(){
+  const val = parseFloat($('weightInput').value) || 160;
+  const unit = $('weightUnit').value;
+  return unit === 'kg' ? val : val * 0.453592;
+}
+function formatMinutes(mins){
+  if(mins < 1) return '<1 min';
+  if(mins < 90) return Math.round(mins) + ' min';
+  const h = Math.floor(mins/60), m = Math.round(mins%60);
+  return `${h}h ${m}m`;
+}
+function renderExercise(totA, totB){
+  const weightKg = getWeightKgEO();
+  const grid = $('exGrid');
+  grid.innerHTML = '';
+  [totA, totB].forEach(tot=>{
+    const col = document.createElement('div');
+    col.className = 'ex-col';
+    let itemsHtml = '';
+    ACTIVITIES.forEach(act=>{
+      const calPerMin = act.met * 3.5 * weightKg / 200;
+      const mins = tot.calories / calPerMin;
+      itemsHtml += `<div class="ex-item"><div class="act">${act.emoji} ${act.name} <span style="color:var(--sub);font-size:12px;">(${act.desc})</span></div><div class="mins">${formatMinutes(mins)}</div></div>`;
+    });
+    col.innerHTML = `<h5>${escapeHtml(tot.name)} — ${Math.round(tot.calories)} cal</h5>${itemsHtml}`;
+    grid.appendChild(col);
+  });
+}
+$('weightInput').addEventListener('change', ()=>{ if($('results').style.display==='block') runComparison(); });
+$('weightUnit').addEventListener('change', ()=>{ if($('results').style.display==='block') runComparison(); });
+
+
+/* ============================================================
+   COOKING AT HOME TAB  (Weekly Table)
+   ============================================================ */
+const BASE_SERVINGS = 4;
+const CAT_LABELS = {
+  produce:'Produce', meat_seafood:'Meat & Seafood', dairy_eggs:'Dairy & Eggs',
+  pantry:'Pantry & Canned', frozen:'Frozen', bakery:'Bakery', other:'Other'
+};
+const CAT_ORDER = ['produce','meat_seafood','dairy_eggs','bakery','pantry','frozen','other'];
+
+const RECIPES = [
+  {id:'spaghetti-meat-sauce', name:'Spaghetti with Meat Sauce', mealType:'dinner', time:30, tags:['comfort'],
+    ingredients:[
+      {name:'Ground beef', qty:1, unit:'lb', category:'meat_seafood'},
+      {name:'Spaghetti', qty:12, unit:'oz box', category:'pantry'},
+      {name:'Jarred marinara sauce', qty:24, unit:'oz jar', category:'pantry'},
+      {name:'Onion', qty:1, unit:'whole', category:'produce'},
+      {name:'Garlic', qty:2, unit:'cloves', category:'produce'},
+      {name:'Parmesan cheese', qty:0.5, unit:'cup, grated', category:'dairy_eggs'},
+    ],
+    steps:[
+      'Bring a large pot of salted water to a boil and cook the spaghetti according to the box directions.',
+      'While the pasta cooks, chop the onion and garlic into small pieces.',
+      'In a separate pan over medium heat, cook the ground beef with the onion and garlic, breaking the meat apart with a spoon, until the meat is no longer pink and reaches 160°F (about 7-8 minutes).',
+      'Pour in the jar of marinara sauce, stir, and let it simmer on low for 5 minutes.',
+      'Drain the pasta and serve topped with the sauce and grated Parmesan.'
+    ]},
+  {id:'sheet-pan-chicken', name:'Sheet-Pan Chicken, Potatoes & Green Beans', mealType:'dinner', time:45, tags:[],
+    ingredients:[
+      {name:'Chicken thighs (bone-in or boneless)', qty:4, unit:'pieces', category:'meat_seafood'},
+      {name:'Small potatoes', qty:1.5, unit:'lb', category:'produce'},
+      {name:'Green beans', qty:1, unit:'lb, fresh or frozen', category:'produce'},
+      {name:'Olive oil', qty:3, unit:'tbsp', category:'pantry'},
+      {name:'Salt', qty:1, unit:'tsp', category:'pantry'},
+      {name:'Black pepper', qty:0.5, unit:'tsp', category:'pantry'},
+      {name:'Garlic powder', qty:1, unit:'tsp', category:'pantry'},
+    ],
+    steps:[
+      'Heat the oven to 425°F (220°C). Line a large baking sheet with foil for easy cleanup.',
+      'Cut the potatoes into bite-size chunks. Trim the ends off the green beans if fresh.',
+      'Put the chicken, potatoes, and green beans on the sheet pan. Drizzle with olive oil and sprinkle with salt, pepper, and garlic powder. Toss everything with your hands so it\'s evenly coated.',
+      'Spread everything into a single layer and bake for 30-35 minutes, until the chicken reaches 165°F inside and the potatoes are fork-tender.'
+    ]},
+  {id:'ground-beef-tacos', name:'Ground Beef Tacos', mealType:'dinner', time:25, tags:[],
+    ingredients:[
+      {name:'Ground beef', qty:1, unit:'lb', category:'meat_seafood'},
+      {name:'Taco seasoning packet', qty:1, unit:'packet', category:'pantry'},
+      {name:'Small flour or corn tortillas', qty:8, unit:'count', category:'bakery'},
+      {name:'Shredded cheese', qty:1, unit:'cup', category:'dairy_eggs'},
+      {name:'Lettuce', qty:0.5, unit:'head, shredded', category:'produce'},
+      {name:'Tomato', qty:2, unit:'whole, diced', category:'produce'},
+      {name:'Sour cream', qty:0.5, unit:'cup', category:'dairy_eggs'},
+    ],
+    steps:[
+      'Cook the ground beef in a pan over medium heat, breaking it apart, until browned and cooked to 160°F (about 7 minutes). Drain any extra grease.',
+      'Add the taco seasoning packet and the amount of water it calls for (check the packet). Stir and simmer 3-4 minutes until thickened.',
+      'Warm the tortillas in a dry pan or microwave for about 20 seconds.',
+      'Fill each tortilla with the beef, then top with cheese, lettuce, tomato, and sour cream.'
+    ]},
+  {id:'baked-chicken-rice-broccoli', name:'Baked Chicken Breast with Rice & Broccoli', mealType:'dinner', time:40, tags:[],
+    ingredients:[
+      {name:'Chicken breast', qty:1.25, unit:'lb', category:'meat_seafood'},
+      {name:'White rice', qty:1.5, unit:'cup, uncooked', category:'pantry'},
+      {name:'Broccoli florets', qty:1, unit:'lb, fresh or frozen', category:'produce'},
+      {name:'Olive oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Salt', qty:1, unit:'tsp', category:'pantry'},
+      {name:'Black pepper', qty:0.5, unit:'tsp', category:'pantry'},
+    ],
+    steps:[
+      'Heat the oven to 400°F (200°C). Rub the chicken breasts with 1 tbsp olive oil, salt, and pepper and place on a baking sheet.',
+      'Bake the chicken for 22-25 minutes, until it reaches 165°F inside.',
+      'Meanwhile, cook the rice according to the package directions.',
+      'Steam or microwave the broccoli for 4-5 minutes until bright green and tender, then toss with the remaining olive oil and a pinch of salt.',
+      'Slice the chicken and serve over rice with the broccoli on the side.'
+    ]},
+  {id:'one-pot-chicken-rice', name:'One-Pot Chicken and Rice', mealType:'dinner', time:40, tags:[],
+    ingredients:[
+      {name:'Chicken thighs, boneless', qty:1.25, unit:'lb', category:'meat_seafood'},
+      {name:'White rice', qty:1.5, unit:'cup, uncooked', category:'pantry'},
+      {name:'Chicken broth', qty:3, unit:'cups', category:'pantry'},
+      {name:'Onion', qty:1, unit:'whole', category:'produce'},
+      {name:'Frozen peas and carrots', qty:1, unit:'cup', category:'frozen'},
+      {name:'Olive oil', qty:1, unit:'tbsp', category:'pantry'},
+      {name:'Salt', qty:1, unit:'tsp', category:'pantry'},
+    ],
+    steps:[
+      'Chop the onion. Cut the chicken into bite-size pieces.',
+      'In a large pot, heat the olive oil over medium heat and cook the chicken and onion for 5-6 minutes, until the chicken is lightly browned.',
+      'Add the rice, chicken broth, and salt. Stir, bring to a boil, then cover and reduce heat to low.',
+      'Simmer for 15 minutes without lifting the lid. Then quickly stir in the frozen peas and carrots, cover again, and cook 3 more minutes to warm through.'
+    ]},
+  {id:'grilled-cheese-tomato-soup', name:'Grilled Cheese with Tomato Soup', mealType:'dinner', time:20, tags:['vegetarian','comfort'],
+    ingredients:[
+      {name:'Sandwich bread', qty:8, unit:'slices', category:'bakery'},
+      {name:'Cheddar cheese slices', qty:8, unit:'slices', category:'dairy_eggs'},
+      {name:'Butter', qty:4, unit:'tbsp, softened', category:'dairy_eggs'},
+      {name:'Canned tomato soup', qty:2, unit:'cans (10.75 oz)', category:'pantry'},
+      {name:'Milk or water', qty:2, unit:'cans (fill soup can), for soup', category:'dairy_eggs'},
+    ],
+    steps:[
+      'Butter one side of each slice of bread.',
+      'Place 2 cheese slices between two pieces of bread, buttered sides facing out.',
+      'Cook each sandwich in a pan over medium heat, 3-4 minutes per side, until golden brown and the cheese is melted.',
+      'Meanwhile, heat the tomato soup in a pot with milk or water (check the can label for the ratio), stirring occasionally.',
+      'Serve the grilled cheese alongside a bowl of soup.'
+    ]},
+  {id:'turkey-chili', name:'Turkey Chili', mealType:'dinner', time:40, tags:[],
+    ingredients:[
+      {name:'Ground turkey', qty:1, unit:'lb', category:'meat_seafood'},
+      {name:'Canned kidney beans', qty:1, unit:'can (15 oz), drained', category:'pantry'},
+      {name:'Canned diced tomatoes', qty:1, unit:'can (28 oz)', category:'pantry'},
+      {name:'Onion', qty:1, unit:'whole', category:'produce'},
+      {name:'Chili powder', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Cumin', qty:1, unit:'tsp', category:'pantry'},
+      {name:'Shredded cheese (optional topping)', qty:0.5, unit:'cup', category:'dairy_eggs'},
+    ],
+    steps:[
+      'Chop the onion. In a large pot over medium heat, cook the ground turkey and onion together, breaking the meat apart, until no longer pink (about 8 minutes).',
+      'Add the beans, diced tomatoes, chili powder, and cumin. Stir well.',
+      'Bring to a simmer, then reduce heat to low and cook uncovered for 20 minutes, stirring occasionally.',
+      'Serve hot, topped with shredded cheese if you like.'
+    ]},
+  {id:'baked-salmon-asparagus-rice', name:'Baked Salmon with Asparagus & Rice', mealType:'dinner', time:30, tags:[],
+    ingredients:[
+      {name:'Salmon fillets', qty:4, unit:'pieces (about 6 oz each)', category:'meat_seafood'},
+      {name:'Asparagus', qty:1, unit:'bunch', category:'produce'},
+      {name:'White rice', qty:1.5, unit:'cup, uncooked', category:'pantry'},
+      {name:'Olive oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Lemon', qty:1, unit:'whole', category:'produce'},
+      {name:'Salt', qty:1, unit:'tsp', category:'pantry'},
+      {name:'Black pepper', qty:0.5, unit:'tsp', category:'pantry'},
+    ],
+    steps:[
+      'Heat the oven to 400°F (200°C). Cook the rice according to the package directions.',
+      'Snap the woody ends off the asparagus. Place the salmon and asparagus on a baking sheet, drizzle with olive oil, and season with salt and pepper.',
+      'Bake for 12-15 minutes, until the salmon flakes easily with a fork (145°F inside).',
+      'Squeeze fresh lemon over the top and serve with rice.'
+    ]},
+  {id:'chicken-veggie-stirfry', name:'Chicken and Vegetable Stir-Fry', mealType:'dinner', time:30, tags:[],
+    ingredients:[
+      {name:'Chicken breast', qty:1.25, unit:'lb', category:'meat_seafood'},
+      {name:'Frozen stir-fry vegetable mix', qty:1, unit:'lb bag', category:'frozen'},
+      {name:'Soy sauce', qty:0.25, unit:'cup', category:'pantry'},
+      {name:'Garlic', qty:2, unit:'cloves', category:'produce'},
+      {name:'Vegetable oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'White rice', qty:1.5, unit:'cup, uncooked', category:'pantry'},
+    ],
+    steps:[
+      'Cook the rice according to the package directions.',
+      'Cut the chicken into thin strips. Mince the garlic.',
+      'Heat the oil in a large pan or wok over medium-high heat. Cook the chicken for 5-6 minutes, until no longer pink, then add the garlic and cook 30 seconds more.',
+      'Add the frozen vegetables straight from the bag and cook, stirring often, for 5-6 minutes until heated through and tender.',
+      'Pour in the soy sauce, stir to coat everything, and serve over rice.'
+    ]},
+  {id:'garlic-butter-pasta', name:'Garlic Butter Pasta with Side Salad', mealType:'dinner', time:20, tags:['vegetarian'],
+    ingredients:[
+      {name:'Spaghetti or linguine', qty:1, unit:'lb box', category:'pantry'},
+      {name:'Butter', qty:4, unit:'tbsp', category:'dairy_eggs'},
+      {name:'Garlic', qty:4, unit:'cloves', category:'produce'},
+      {name:'Parmesan cheese', qty:0.5, unit:'cup, grated', category:'dairy_eggs'},
+      {name:'Bagged salad mix', qty:1, unit:'bag (5 oz)', category:'produce'},
+      {name:'Salad dressing of choice', qty:8, unit:'tbsp (2 tbsp per person)', category:'pantry'},
+    ],
+    steps:[
+      'Cook the pasta in salted boiling water according to the box directions. Save half a cup of the pasta water before draining.',
+      'Mince the garlic. Melt the butter in a large pan over medium-low heat and cook the garlic for 1 minute, until fragrant (don\'t let it turn brown).',
+      'Add the drained pasta to the pan along with a splash of the reserved pasta water. Toss to coat, then stir in the Parmesan.',
+      'Serve with a simple side salad tossed with dressing.'
+    ]},
+  {id:'sheet-pan-sausage-peppers', name:'Sheet-Pan Sausage and Peppers', mealType:'dinner', time:35, tags:['comfort'],
+    ingredients:[
+      {name:'Italian sausage links', qty:1, unit:'lb (about 4-5 links)', category:'meat_seafood'},
+      {name:'Bell peppers', qty:3, unit:'whole, any color', category:'produce'},
+      {name:'Onion', qty:1, unit:'whole', category:'produce'},
+      {name:'Olive oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Italian seasoning', qty:1, unit:'tsp', category:'pantry'},
+      {name:'Hoagie rolls (optional)', qty:4, unit:'rolls', category:'bakery'},
+    ],
+    steps:[
+      'Heat the oven to 400°F (200°C).',
+      'Slice the peppers and onion into strips.',
+      'Put the sausages, peppers, and onion on a baking sheet. Drizzle with olive oil and sprinkle with Italian seasoning, then toss to coat.',
+      'Bake for 25-30 minutes, turning the sausages halfway through, until they reach 160°F inside and the vegetables are soft.',
+      'Serve as-is, or stuffed into a hoagie roll.'
+    ]},
+  {id:'beef-broccoli-stirfry', name:'Beef and Broccoli Stir-Fry', mealType:'dinner', time:30, tags:[],
+    ingredients:[
+      {name:'Flank steak or sirloin, thin-sliced', qty:1, unit:'lb', category:'meat_seafood'},
+      {name:'Broccoli florets', qty:1, unit:'lb, fresh or frozen', category:'produce'},
+      {name:'Soy sauce', qty:0.33, unit:'cup', category:'pantry'},
+      {name:'Brown sugar', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Garlic', qty:2, unit:'cloves', category:'produce'},
+      {name:'Vegetable oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'White rice', qty:1.5, unit:'cup, uncooked', category:'pantry'},
+    ],
+    steps:[
+      'Cook the rice according to the package directions.',
+      'Mix the soy sauce, brown sugar, and minced garlic in a small bowl to make the sauce.',
+      'Heat the oil in a large pan over high heat. Cook the beef in a single layer for 2-3 minutes per side, until browned, then remove from the pan.',
+      'Add the broccoli to the same pan with a splash of water, cover, and cook 4-5 minutes until tender.',
+      'Return the beef to the pan, pour in the sauce, and stir everything together for 1-2 minutes. Serve over rice.'
+    ]},
+  {id:'baked-ziti', name:'Baked Ziti', mealType:'dinner', time:45, tags:['vegetarian','comfort'],
+    ingredients:[
+      {name:'Ziti or penne pasta', qty:1, unit:'lb box', category:'pantry'},
+      {name:'Jarred marinara sauce', qty:24, unit:'oz jar', category:'pantry'},
+      {name:'Ricotta cheese', qty:15, unit:'oz container', category:'dairy_eggs'},
+      {name:'Shredded mozzarella', qty:2, unit:'cups', category:'dairy_eggs'},
+      {name:'Parmesan cheese', qty:0.25, unit:'cup, grated', category:'dairy_eggs'},
+      {name:'Egg', qty:1, unit:'whole', category:'dairy_eggs'},
+    ],
+    steps:[
+      'Heat the oven to 375°F (190°C). Cook the pasta until just shy of done (about 2 minutes less than the box says), then drain.',
+      'In a bowl, mix the ricotta, egg, and half of the mozzarella.',
+      'In a baking dish, combine the pasta with the marinara sauce and the ricotta mixture, stirring gently.',
+      'Top with the remaining mozzarella and Parmesan. Cover with foil and bake 20 minutes, then uncover and bake 10 more minutes until bubbly and golden.'
+    ]},
+  {id:'chicken-quesadillas', name:'Chicken Quesadillas', mealType:'dinner', time:25, tags:['comfort'],
+    ingredients:[
+      {name:'Cooked chicken (rotisserie or leftover), shredded', qty:2, unit:'cups', category:'meat_seafood'},
+      {name:'Large flour tortillas', qty:8, unit:'count', category:'bakery'},
+      {name:'Shredded cheese', qty:2, unit:'cups', category:'dairy_eggs'},
+      {name:'Salsa', qty:1, unit:'cup', category:'pantry'},
+      {name:'Sour cream', qty:0.5, unit:'cup', category:'dairy_eggs'},
+    ],
+    steps:[
+      'Lay a tortilla flat, sprinkle cheese and shredded chicken over half of it, then fold the other half over.',
+      'Heat a dry pan over medium heat. Cook each quesadilla 2-3 minutes per side, until golden and the cheese is melted.',
+      'Slice into wedges and serve with salsa and sour cream.'
+    ]},
+  {id:'turkey-burgers-sweet-potato-fries', name:'Turkey Burgers with Sweet Potato Fries', mealType:'dinner', time:35, tags:[],
+    ingredients:[
+      {name:'Ground turkey', qty:1.25, unit:'lb', category:'meat_seafood'},
+      {name:'Burger buns', qty:4, unit:'count', category:'bakery'},
+      {name:'Sweet potatoes', qty:2, unit:'large', category:'produce'},
+      {name:'Olive oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Salt', qty:1, unit:'tsp', category:'pantry'},
+      {name:'Lettuce leaves (topping)', qty:4, unit:'leaves', category:'produce'},
+      {name:'Tomato (topping)', qty:1, unit:'whole, sliced', category:'produce'},
+    ],
+    steps:[
+      'Heat the oven to 425°F (220°C). Cut the sweet potatoes into thin fry-shaped sticks, toss with olive oil and salt, and spread on a baking sheet. Bake 25-30 minutes, flipping halfway.',
+      'Shape the ground turkey into 4 patties and season with a pinch of salt.',
+      'Cook the patties in a pan over medium heat, about 5-6 minutes per side, until they reach 165°F inside.',
+      'Serve the burgers on buns with lettuce and tomato, alongside the sweet potato fries.'
+    ]},
+  {id:'shrimp-fajitas', name:'Shrimp Fajitas', mealType:'dinner', time:25, tags:[],
+    ingredients:[
+      {name:'Shrimp, peeled and deveined', qty:1, unit:'lb', category:'meat_seafood'},
+      {name:'Bell peppers', qty:3, unit:'whole, any color', category:'produce'},
+      {name:'Onion', qty:1, unit:'whole', category:'produce'},
+      {name:'Fajita seasoning packet', qty:1, unit:'packet', category:'pantry'},
+      {name:'Vegetable oil', qty:2, unit:'tbsp', category:'pantry'},
+      {name:'Small flour tortillas', qty:8, unit:'count', category:'bakery'},
+    ],
+    steps:[
+      'Slice the peppers and onion into strips.',
+      'Heat the oil in a large pan over medium-high heat. Cook the peppers and onion for 4-5 minutes until softened.',
+      'Add the shrimp and fajita seasoning (plus any water the packet calls for). Cook 3-4 minutes, until the shrimp turn pink and opaque.',
+      'Warm the tortillas and serve the shrimp mixture wrapped inside.'
+    ]},
+];
+
+/* v2: per-serving nutrition for the built-in recipes, computed from USDA FoodData Central
+   (SR Legacy) ingredient values for the listed amounts / 4 servings. Ingredient-by-ingredient
+   FDC IDs, gram weights and assumptions are in "Weekly Table accuracy audit.xlsx" (Recipes + Sources sheets).
+   Estimates: raw weights, fat not drained, optional items noted in the audit. */
+const RECIPE_NUTRITION_USDA = {"spaghetti-meat-sauce":{"calories":754,"protein":37,"fat":30,"saturated_fat":11.1,"carbs":81,"fiber":6,"sugars":12,"sodium":1050},"sheet-pan-chicken":{"calories":392,"protein":28,"fat":15,"saturated_fat":2.7,"carbs":38,"fiber":7,"sugars":5,"sodium":706},"ground-beef-tacos":{"calories":675,"protein":33,"fat":42,"saturated_fat":18.1,"carbs":40,"fiber":5,"sugars":7,"sodium":1227},"baked-chicken-rice-broccoli":{"calories":522,"protein":40,"fat":11,"saturated_fat":2.0,"carbs":63,"fiber":4,"sugars":2,"sodium":686},"one-pot-chicken-rice":{"calories":495,"protein":36,"fat":10,"saturated_fat":2.2,"carbs":63,"fiber":3,"sugars":2,"sodium":1441},"grilled-cheese-tomato-soup":{"calories":564,"protein":20,"fat":33,"saturated_fat":18.5,"carbs":50,"fiber":3,"sugars":16,"sodium":1281},"turkey-chili":{"calories":350,"protein":33,"fat":15,"saturated_fat":5.3,"carbs":24,"fiber":9,"sugars":7,"sodium":624},"baked-salmon-asparagus-rice":{"calories":684,"protein":42,"fat":30,"saturated_fat":6.3,"carbs":59,"fiber":3,"sugars":2,"sodium":687},"chicken-veggie-stirfry":{"calories":578,"protein":42,"fat":12,"saturated_fat":1.6,"carbs":72,"fiber":6,"sugars":0,"sodium":996},"garlic-butter-pasta":{"calories":655,"protein":19,"fat":23,"saturated_fat":10.4,"carbs":92,"fiber":4,"sugars":7,"sodium":625},"sheet-pan-sausage-peppers":{"calories":423,"protein":17,"fat":35,"saturated_fat":10.8,"carbs":11,"fiber":2,"sugars":6,"sodium":643},"beef-broccoli-stirfry":{"calories":562,"protein":35,"fat":15,"saturated_fat":3.7,"carbs":71,"fiber":4,"sugars":9,"sodium":1264},"baked-ziti":{"calories":875,"protein":42,"fat":29,"saturated_fat":15.2,"carbs":109,"fiber":7,"sugars":13,"sodium":1370},"chicken-quesadillas":{"calories":853,"protein":46,"fat":40,"saturated_fat":18.5,"carbs":76,"fiber":6,"sugars":9,"sodium":1926},"turkey-burgers-sweet-potato-fries":{"calories":470,"protein":34,"fat":19,"saturated_fat":4.2,"carbs":40,"fiber":3,"sugars":7,"sodium":931},"shrimp-fajitas":{"calories":402,"protein":29,"fat":13,"saturated_fat":2.4,"carbs":42,"fiber":5,"sugars":8,"sodium":1153}};
+RECIPES.forEach(r=>{ if(RECIPE_NUTRITION_USDA[r.id]){ r.nutrition = RECIPE_NUTRITION_USDA[r.id]; r.nutritionSource = 'usda'; } });
+/* ============================================================
+   v3: INGREDIENT PRICES, RECIPE COST, MY RECIPES
+   Price per recipe unit. "bls" = Sep 2026 BLS average retail price, South region
+   (U.S. average for iceberg lettuce), converted to the recipe unit.
+   "est" = typical store-brand price, Nov 2026. Replace with real store prices later.
+   ============================================================ */
+const PRICES = {
+  'asparagus|bunch':[3.49,'est'], 'bagged salad mix|bag (5 oz)':[2.99,'est'], 'bell peppers|whole, any color':[0.99,'est'],
+  'black pepper|tsp':[0.05,'est'], 'broccoli florets|lb, fresh or frozen':[2.49,'est'], 'brown sugar|tbsp':[0.04,'est'],
+  'burger buns|count':[0.33,'est'], 'butter|tbsp':[0.14,'est'], 'butter|tbsp, softened':[0.14,'est'],
+  'canned diced tomatoes|can (28 oz)':[1.79,'est'], 'canned kidney beans|can (15 oz), drained':[0.99,'est'],
+  'canned tomato soup|cans (10.75 oz)':[1.00,'est'], 'cheddar cheese slices|slices':[0.17,'est'],
+  'chicken breast|lb':[4.15,'bls'], 'chicken broth|cups':[0.50,'est'], 'chicken thighs (bone-in or boneless)|pieces':[0.86,'est'],
+  'chicken thighs, boneless|lb':[3.49,'est'], 'chili powder|tbsp':[0.25,'est'],
+  'cooked chicken (rotisserie or leftover), shredded|cups':[2.00,'est'], 'cumin|tsp':[0.10,'est'], 'egg|whole':[0.20,'bls'],
+  'fajita seasoning packet|packet':[1.00,'est'], 'flank steak or sirloin, thin-sliced|lb':[10.99,'est'],
+  'frozen peas and carrots|cup':[0.40,'est'], 'frozen stir-fry vegetable mix|lb bag':[2.49,'est'], 'garlic|cloves':[0.07,'est'],
+  'garlic powder|tsp':[0.08,'est'], 'green beans|lb, fresh or frozen':[1.99,'est'], 'ground beef|lb':[6.50,'bls'],
+  'ground turkey|lb':[4.99,'est'], 'hoagie rolls (optional)|rolls':[0.62,'est'], 'italian sausage links|lb (about 4-5 links)':[4.49,'est'],
+  'italian seasoning|tsp':[0.10,'est'], 'jarred marinara sauce|oz jar':[0.10,'est'], 'large flour tortillas|count':[0.35,'est'],
+  'lemon|whole':[0.54,'bls'], 'lettuce|head, shredded':[2.05,'bls'], 'lettuce leaves (topping)|leaves':[0.06,'est'],
+  'milk or water|cans (fill soup can), for soup':[0.33,'bls'], 'olive oil|tbsp':[0.25,'est'], 'onion|whole':[0.70,'est'],
+  'parmesan cheese|cup, grated':[1.80,'est'], 'ricotta cheese|oz container':[0.23,'est'],
+  'salad dressing of choice|tbsp (2 tbsp per person)':[0.12,'est'], 'salmon fillets|pieces (about 6 oz each)':[3.75,'est'],
+  'salsa|cup':[1.50,'est'], 'salt|tsp':[0.01,'est'], 'sandwich bread|slices':[0.09,'bls'], 'shredded cheese|cup':[1.38,'bls'],
+  'shredded cheese|cups':[1.38,'bls'], 'shredded cheese (optional topping)|cup':[1.38,'bls'], 'shredded mozzarella|cups':[1.25,'est'],
+  'shrimp, peeled and deveined|lb':[7.99,'est'], 'small flour or corn tortillas|count':[0.22,'est'], 'small flour tortillas|count':[0.22,'est'],
+  'small potatoes|lb':[1.03,'bls'], 'sour cream|cup':[1.00,'est'], 'soy sauce|cup':[1.50,'est'], 'spaghetti|oz box':[0.08,'bls'],
+  'spaghetti or linguine|lb box':[1.28,'bls'], 'sweet potatoes|large':[1.20,'est'], 'taco seasoning packet|packet':[1.00,'est'],
+  'tomato|whole, diced':[0.80,'bls'], 'tomato (topping)|whole, sliced':[0.80,'bls'], 'vegetable oil|tbsp':[0.06,'est'],
+  'white rice|cup, uncooked':[0.50,'bls'], 'ziti or penne pasta|lb box':[1.28,'bls'],
+  'ripe bananas|whole':[0.25,'bls'], 'butter|cup, melted':[2.24,'est'], 'sugar|cup':[0.46,'bls'], 'egg|whole, beaten':[0.20,'bls'],
+  'vanilla extract|tsp':[0.58,'est'], 'baking soda|tsp':[0.02,'est'], 'salt|pinch':[0.01,'est'], 'all-purpose flour|cups':[0.13,'bls'],
+  'mini chocolate chips|cup':[1.76,'est'],
+};
+function priceOf(ing){ return PRICES[(ing.name+'|'+(ing.unit||'')).toLowerCase()] || null; }
+function ingCost(ing, mult){ const p = priceOf(ing); return p ? (ing.qty||0)*mult*p[0] : null; }
+function recipeCost(r, mult){
+  let total = 0, missing = 0;
+  r.ingredients.forEach(ing=>{ const c = ingCost(ing, mult); if(c==null) missing++; else total += c; });
+  return {total, missing};
+}
+function money(x){ return '$' + x.toFixed(2); }
+function costLine(r, mult, servings){
+  const c = recipeCost(r, mult);
+  if(c.missing === r.ingredients.length) return '';
+  return ` · <span class="cost-chip">${money(c.total)} total</span> (${money(c.total/servings)} per serving)` + (c.missing ? `<span class="unv" title="${c.missing} ingredient(s) have no price yet">partial</span>` : '');
+}
+const MY_RECIPES = [
+  {id:'banana-bread', name:'Chocolate Chip Banana Bread', mealType:'treat', time:70, tags:['vegetarian'], servingsBase:6,
+   sourceUrl:'https://tasty.co/recipe/one-bowl-chocolate-chip-banana-bread', sourceName:'Tasty',
+   nutrition:{calories:400, protein:6}, nutritionSource:'usda',
+   ingredients:[
+     {name:'Ripe bananas', qty:3, unit:'whole', category:'produce'},
+     {name:'Butter', qty:0.33, unit:'cup, melted', category:'dairy_eggs'},
+     {name:'Sugar', qty:0.5, unit:'cup', category:'pantry'},
+     {name:'Egg', qty:1, unit:'whole, beaten', category:'dairy_eggs'},
+     {name:'Vanilla extract', qty:1, unit:'tsp', category:'pantry'},
+     {name:'Baking soda', qty:1, unit:'tsp', category:'pantry'},
+     {name:'Salt', qty:1, unit:'pinch', category:'pantry'},
+     {name:'All-purpose flour', qty:1.5, unit:'cups', category:'pantry'},
+     {name:'Mini chocolate chips', qty:0.5, unit:'cup', category:'pantry'},
+   ],
+   steps:[
+     'Turn the oven to 350°F and grease a loaf pan.',
+     'Mash the 3 bananas in a big bowl until smooth.',
+     'Stir in the ⅓ cup of melted butter.',
+     'Add the sugar, egg, vanilla, baking soda and a pinch of salt. Stir.',
+     'Add the flour and stir until the batter is smooth. Stop as soon as you see no dry flour.',
+     'Fold in the chocolate chips, pour into the pan, and sprinkle a few chips on top.',
+     'Bake 50 to 60 minutes, until a toothpick in the middle comes out clean.',
+     'Let it cool completely before slicing.'
+   ]},
+];
+function renderMyRecipes(){
+  const row = $('myRecipesRow'); if(!row) return;
+  row.innerHTML = '';
+  MY_RECIPES.forEach(r=>{
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    const n = r.servingsBase;
+    card.innerHTML = `<h4>${escapeHtml(r.name)}</h4>
+      <div class="meta">${r.time} min · makes ${n}${costLine(r,1,n)} · ${r.nutrition.calories} cal, ${r.nutrition.protein}g protein (per serving)<span class="est">USDA est.</span></div>
+      ${r.sourceUrl ? `<div class="meta">From <a href="${r.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(r.sourceName||'original')}</a></div>` : ''}
+      <div class="card-actions"><button class="cook-btn" data-act="cook">Cook this</button></div>`;
+    card.querySelector('[data-act=cook]').onclick = ()=> openCook(r, 1, n);
+    row.appendChild(card);
+  });
+}
+
+/* ---- v3: cook mode (gather list with costs, then swipeable steps) ---- */
+const ck = {r:null, mult:1, idx:0, got:new Set(), lock:null, endAt:null, tick:null, timerStep:-1, ac:null};
+function stepTimerMinutes(text){
+  const m = text.match(/(\d+)\s*(?:-|–|to)\s*(\d+)\s*min/i) || text.match(/(\d+)\s*min/i);
+  return m ? parseInt(m[1],10) : 0;
+}
+function openCook(r, mult, servings){
+  ck.r = r; ck.mult = mult; ck.idx = 0; ck.got = new Set();
+  $('ckTitle').textContent = r.name;
+  const c = recipeCost(r, mult);
+  const costBox = c.missing === r.ingredients.length
+    ? `<div class="ck-tot"><small>Total cost</small><b>–</b><span>no prices for this recipe yet</span></div>`
+    : `<div class="ck-tot"><small>Total cost</small><b>${money(c.total)}</b><span>${servings} servings · ${money(c.total/servings)} each${c.missing?' · partial':''}</span></div>`;
+  const nutBox = (r.nutrition && r.nutrition.calories)
+    ? `<div class="ck-tot"><small>Calories</small><b>${Math.round(r.nutrition.calories)}</b><span>per serving · ${r.nutrition.protein||'?'} g protein</span></div>`
+    : `<div class="ck-tot"><small>Calories</small><b>–</b><span>not available yet</span></div>`;
+  $('ckTots').innerHTML = costBox + nutBox;
+  const ul = $('ckIng'); ul.innerHTML = '';
+  r.ingredients.forEach((ing,i)=>{
+    const cost = ingCost(ing, mult), p = priceOf(ing);
+    const li = document.createElement('li');
+    li.innerHTML = `<button aria-pressed="false"><span class="ck-box"></span><span class="ck-emoji">${ingredientEmoji(ing)}</span><span class="ck-name"><b>${formatQty((ing.qty||0)*mult)} ${escapeHtml(ing.unit||'')}</b> ${escapeHtml(ing.name)}</span><span class="ck-cost">${cost!=null ? money(cost)+(p[1]==='est'?' est':'') : ''}</span></button>`;
+    const b = li.firstChild;
+    b.onclick = ()=>{ ck.got.has(i)?ck.got.delete(i):ck.got.add(i); b.setAttribute('aria-pressed', ck.got.has(i)); b.querySelector('.ck-box').textContent = ck.got.has(i)?'✓':''; };
+    ul.appendChild(li);
+  });
+  const dots = $('ckDots'); dots.innerHTML = '';
+  for(let i=0;i<=r.steps.length;i++) dots.appendChild(document.createElement('i'));
+  $('cook').hidden = false; document.body.style.overflow = 'hidden';
+  ckShow('gather'); ckRender(0);
+}
+function closeCook(){ $('cook').hidden = true; document.body.style.overflow = ''; if(ck.lock){ try{ck.lock.release();}catch(e){} ck.lock=null; } ckPaintTimer(); }
+function ckShow(which){
+  const s = which==='steps';
+  $('ckGather').hidden = s; $('ckSteps').hidden = !s;
+  $('ckTabGather').setAttribute('aria-selected', !s); $('ckTabSteps').setAttribute('aria-selected', s);
+  if(s) ckAwake();
+  ckPaintTimer();
+}
+async function ckAwake(){ try{ if('wakeLock' in navigator && !ck.lock){ ck.lock = await navigator.wakeLock.request('screen'); ck.lock.addEventListener('release', ()=>ck.lock=null); } }catch(e){} }
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && !$('cook').hidden && !$('ckSteps').hidden) ckAwake(); });
+function ckCardHTML(i){
+  const r = ck.r;
+  if(i >= r.steps.length) return `<div class="ck-count">Done</div><p class="ck-big">That is it. Enjoy your ${escapeHtml(r.name.toLowerCase())}.</p><button class="ck-go" data-act="done">Close</button>`;
+  const t = r.steps[i], mins = stepTimerMinutes(t);
+  return `<div class="ck-count">Step ${i+1} of ${r.steps.length}</div><p class="ck-big">${escapeHtml(t)}</p>` + (mins ? `<button class="ck-timer" data-act="timer" data-min="${mins}"></button>` : '');
+}
+function ckRender(dir){
+  const stage = $('ckStage'), old = stage.querySelector('.ck-card');
+  const c = document.createElement('div'); c.className = 'ck-card'; c.innerHTML = ckCardHTML(ck.idx);
+  if(old && dir){
+    c.classList.add(dir>0?'out-right':'out-left'); stage.appendChild(c);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ c.classList.remove('out-right','out-left'); old.classList.add(dir>0?'out-left':'out-right'); setTimeout(()=>old.remove(), 340); }));
+  } else { stage.querySelectorAll('.ck-card').forEach(o=>o.remove()); stage.appendChild(c); }
+  ckWire(c);
+  [...$('ckDots').children].forEach((d,i)=> d.className = i===ck.idx ? 'on' : '');
+  $('ckPrev').disabled = ck.idx===0; $('ckNext').disabled = ck.idx>=ck.r.steps.length;
+  $('ckNext').textContent = ck.idx===ck.r.steps.length-1 ? 'Finish' : 'Next';
+  ckPaintTimer();
+}
+function ckGo(d){ const n = ck.idx + d; if(!ck.r || n<0 || n>ck.r.steps.length) return; ck.idx = n; ckRender(d); }
+function ckWire(c){
+  const t = c.querySelector('[data-act=timer]'); if(t) t.onclick = ()=> ckToggleTimer(ck.idx, parseInt(t.dataset.min,10));
+  const d = c.querySelector('[data-act=done]'); if(d) d.onclick = closeCook;
+  let x0 = null, dx = 0;
+  c.addEventListener('pointerdown', e=>{ if(e.target.closest('button')) return; x0 = e.clientX; dx = 0; c.classList.add('dragging'); c.setPointerCapture(e.pointerId); });
+  c.addEventListener('pointermove', e=>{ if(x0===null) return; dx = e.clientX - x0; c.style.transform = `translateX(${dx}px) rotate(${dx/40}deg)`; });
+  const end = ()=>{ if(x0===null) return; x0 = null; c.classList.remove('dragging'); c.style.transform = ''; if(dx < -60) ckGo(1); else if(dx > 60) ckGo(-1); };
+  c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
+}
+function ckFmt(ms){ const s = Math.max(0, Math.round(ms/1000)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function ckToggleTimer(i, mins){
+  if(ck.endAt && ck.timerStep===i){ ck.endAt = null; clearInterval(ck.tick); }
+  else { clearInterval(ck.tick); ck.endAt = Date.now() + mins*60000; ck.timerStep = i; ck.tick = setInterval(ckPaintTimer, 500); ckBeep(0); }
+  ckPaintTimer();
+}
+function ckPaintTimer(){
+  const cards = document.querySelectorAll('#ckStage .ck-card'), cur = cards[cards.length-1];
+  const t = cur ? cur.querySelector('[data-act=timer]') : null, p = $('ckPill');
+  if(ck.endAt && ck.endAt - Date.now() <= 0){ ck.endAt = null; clearInterval(ck.tick); ckBeep(3); if(t) t.textContent = 'Time is up'; p.hidden = true; return; }
+  const mine = !!ck.endAt && ck.timerStep===ck.idx;
+  if(t){ t.textContent = mine ? `${ckFmt(ck.endAt-Date.now())} left · Stop` : `Start ${t.dataset.min}:00 timer`; t.classList.toggle('running', mine); }
+  const visibleOnStep = mine && !$('cook').hidden && !$('ckSteps').hidden;
+  p.hidden = !ck.endAt || visibleOnStep;
+  if(ck.endAt) p.textContent = 'Timer ' + ckFmt(ck.endAt - Date.now());
+}
+function ckBeep(n){ try{ ck.ac = ck.ac || new (window.AudioContext||window.webkitAudioContext)(); for(let i=0;i<n;i++){ const o = ck.ac.createOscillator(), g = ck.ac.createGain(); o.frequency.value = 880; o.connect(g); g.connect(ck.ac.destination); const st = ck.ac.currentTime + i*0.4; g.gain.setValueAtTime(.2, st); g.gain.exponentialRampToValueAtTime(.001, st+.3); o.start(st); o.stop(st+.3); } }catch(e){} }
+$('ckClose').onclick = closeCook;
+$('ckTabGather').onclick = ()=> ckShow('gather');
+$('ckTabSteps').onclick = ()=> ckShow('steps');
+$('ckStart').onclick = ()=>{ ck.idx = 0; ckRender(0); ckShow('steps'); };
+$('ckNext').onclick = ()=> ckGo(1);
+$('ckPrev').onclick = ()=> ckGo(-1);
+$('ckPill').onclick = ()=>{ if(!ck.r) return; $('cook').hidden = false; document.body.style.overflow = 'hidden'; ck.idx = ck.timerStep; ckRender(-1); ckShow('steps'); };
+document.addEventListener('keydown', e=>{ if($('cook').hidden) return; if(e.key==='Escape') closeCook(); if($('ckSteps').hidden) return; if(e.key==='ArrowRight') ckGo(1); if(e.key==='ArrowLeft') ckGo(-1); });
+
+
+const LS_STORES = 'wt_stores';
+const LS_AISLES = 'wt_aisles';
+const LS_SPOON_KEY = 'wt_spoon_key';
+
+function loadStores(){ try{ return JSON.parse(localStorage.getItem(LS_STORES)) || []; }catch(e){ return []; } }
+function saveStores(s){ localStorage.setItem(LS_STORES, JSON.stringify(s)); }
+function loadAisles(){ try{ return JSON.parse(localStorage.getItem(LS_AISLES)) || {}; }catch(e){ return {}; } }
+function saveAisles(m){ localStorage.setItem(LS_AISLES, JSON.stringify(m)); }
+function getSpoonacularKey(){ return (localStorage.getItem(LS_SPOON_KEY) || '').trim(); }
+
+let stores = loadStores();
+let aisleMap = loadAisles();
+let currentPlan = [];
+let checkedItems = {};
+let currentPool = [];
+
+/* ---- Settings: Spoonacular key ---- */
+$('spoonKeyInput').value = getSpoonacularKey();
+updateKeyStatus();
+$('saveKeyBtn').addEventListener('click', ()=>{
+  localStorage.setItem(LS_SPOON_KEY, $('spoonKeyInput').value.trim());
+  updateKeyStatus();
+  buildDietOptions();
+});
+$('clearKeyBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(LS_SPOON_KEY);
+  $('spoonKeyInput').value = '';
+  updateKeyStatus();
+  buildDietOptions();
+});
+function updateKeyStatus(){
+  $('keyStatus').textContent = getSpoonacularKey() ? '✓ Key saved — more diets & recipes unlocked' : 'No key yet — using the built-in beginner recipe list';
+}
+
+/* ---- Diet options (depend on whether a key is set) ---- */
+const DIET_OPTIONS = [
+  {value:'', label:'No preference', local:true},
+  {value:'vegetarian', label:'Vegetarian-friendly', local:true},
+  {value:'vegan', label:'Vegan', local:false},
+  {value:'gluten free', label:'Gluten-Free', local:false},
+  {value:'dairy free', label:'Dairy-Free', local:false},
+  {value:'ketogenic', label:'Keto', local:false},
+  {value:'paleo', label:'Paleo', local:false},
+];
+function buildDietOptions(){
+  const hasKey = !!getSpoonacularKey();
+  const sel = $('dietFilter');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  DIET_OPTIONS.forEach(d=>{
+    const opt = document.createElement('option');
+    opt.value = d.value;
+    opt.textContent = d.label + (!d.local && !hasKey ? ' (needs API key)' : '');
+    sel.appendChild(opt);
+  });
+  if([...sel.options].some(o=>o.value===prev)) sel.value = prev;
+}
+buildDietOptions();
+
+/* ---- Stores: OSM lookup + manual ---- */
+function renderStores(){
+  const row = $('storesRow');
+  row.innerHTML = '';
+  stores.forEach(store=>{
+    const chip = document.createElement('div');
+    chip.className = 'store-chip';
+    chip.innerHTML = `<input type="text" value="${escapeHtml(store.name)}"> <button title="Remove">✕</button>`;
+    chip.querySelector('input').addEventListener('change', (e)=>{
+      store.name = e.target.value || store.name;
+      saveStores(stores);
+      renderActiveStoreSelect();
+    });
+    chip.querySelector('button').addEventListener('click', ()=>{
+      stores = stores.filter(s=>s.id!==store.id);
+      delete aisleMap[store.id];
+      saveStores(stores); saveAisles(aisleMap);
+      renderStores(); renderActiveStoreSelect(); renderShoppingList();
+    });
+    row.appendChild(chip);
+  });
+  const full = stores.length >= 3;
+  $('findStoresBtn').disabled = full;
+  $('addManualStoreBtn').disabled = full;
+}
+
+function setStoreStatus(msg, isError){
+  const el = $('storeStatus');
+  el.textContent = msg || '';
+  el.className = 'status-msg' + (isError?' error':'');
+}
+
+function distanceMiles(lat1, lon1, lat2, lon2){
+  const toRad = d=> d*Math.PI/180;
+  const R = 3958.8;
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+$('findStoresBtn').addEventListener('click', async ()=>{
+  const zip = $('zipInput').value.trim();
+  if(!zip){ setStoreStatus('Enter a zip code first.', true); return; }
+  if(stores.length>=3){ setStoreStatus('You already have 3 saved stores — remove one first.', true); return; }
+  setStoreStatus('Looking up stores near ' + zip + '…');
+  $('storeSearchResults').innerHTML = '';
+  try{
+    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zip)}&country=US&format=json&limit=1`);
+    const geo = await geoRes.json();
+    if(!geo.length){ setStoreStatus('Could not find that zip code.', true); return; }
+    const lat = parseFloat(geo[0].lat), lon = parseFloat(geo[0].lon);
+    const query = `[out:json][timeout:20];(node["shop"~"supermarket|convenience"](around:8000,${lat},${lon}););out center 20;`;
+    const overpassRes = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body: query});
+    const data = await overpassRes.json();
+    const results = data.elements
+      .filter(e=>e.tags && e.tags.name)
+      .map(e=>({ name:e.tags.name, lat:e.lat, lon:e.lon, dist: distanceMiles(lat, lon, e.lat, e.lon) }))
+      .sort((a,b)=>a.dist-b.dist)
+      .slice(0,10);
+    renderStoreSearchResults(results);
+    setStoreStatus(results.length ? '' : 'No supermarkets found nearby in the map data — try adding one manually.');
+  }catch(e){
+    setStoreStatus('Could not reach the store lookup service. Check your connection, or add a store manually.', true);
+  }
+});
+
+function renderStoreSearchResults(results){
+  const box = $('storeSearchResults');
+  box.innerHTML = results.map((r,i)=>
+    `<div class="ing-row"><span>${escapeHtml(r.name)} — ${r.dist.toFixed(1)} mi</span><button class="ghost-btn" data-idx="${i}" style="padding:4px 10px;">+ Add</button></div>`
+  ).join('');
+  box.querySelectorAll('button[data-idx]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const r = results[btn.dataset.idx];
+      addStore(r.name, r.lat, r.lon);
+      box.innerHTML = '';
+    });
+  });
+}
+
+function addStore(name, lat, lon){
+  if(stores.length>=3){ setStoreStatus('You already have 3 saved stores — remove one first.', true); return; }
+  stores.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6), name, lat, lon});
+  saveStores(stores);
+  renderStores(); renderActiveStoreSelect(); renderShoppingList();
+}
+
+$('addManualStoreBtn').addEventListener('click', ()=>{
+  if(stores.length>=3){ setStoreStatus('You already have 3 saved stores — remove one first.', true); return; }
+  const name = prompt('Store name?');
+  if(name && name.trim()) addStore(name.trim(), null, null);
+});
+
+if(stores.length === 0){
+  stores = [{id:'s'+Date.now(), name:'Store A'}];
+  saveStores(stores);
+}
+
+/* ---- Plan generation ---- */
+function pickRandom(arr, n, exclude){
+  const pool = arr.filter(r => !exclude.has(r.id));
+  const picks = [];
+  const copy = [...pool];
+  while(picks.length < n && copy.length){
+    const idx = Math.floor(Math.random()*copy.length);
+    picks.push(copy.splice(idx,1)[0]);
+  }
+  return picks;
+}
+
+function mapAisleToCategory(aisle){
+  if(!aisle) return 'other';
+  const a = aisle.toLowerCase();
+  if(a.includes('produce')) return 'produce';
+  if(a.includes('meat')||a.includes('seafood')||a.includes('poultry')) return 'meat_seafood';
+  if(a.includes('dairy')||a.includes('egg')||a.includes('cheese')||a.includes('milk')) return 'dairy_eggs';
+  if(a.includes('bread')||a.includes('bakery')) return 'bakery';
+  if(a.includes('frozen')) return 'frozen';
+  if(a.includes('pasta')||a.includes('rice')||a.includes('canned')||a.includes('bak')||a.includes('spice')||a.includes('oil')||a.includes('condiment')||a.includes('sauce')) return 'pantry';
+  return 'other';
+}
+
+function mapSpoonacularRecipe(r){
+  const nutrients = (r.nutrition && r.nutrition.nutrients) || [];
+  const findN = (name)=>{ const n = nutrients.find(x=>x.name===name); return n ? Math.round(n.amount) : null; };
+  const tags = [];
+  if(r.vegetarian) tags.push('vegetarian');
+  if(r.vegan) tags.push('vegan');
+  if(r.glutenFree) tags.push('gluten free');
+  if(r.dairyFree) tags.push('dairy free');
+  if(Array.isArray(r.diets)) r.diets.forEach(d=>{ if(!tags.includes(d)) tags.push(d); });
+  let steps = ['See full recipe at the source site.'];
+  if(r.analyzedInstructions && r.analyzedInstructions[0] && r.analyzedInstructions[0].steps && r.analyzedInstructions[0].steps.length){
+    steps = r.analyzedInstructions[0].steps.map(s=>s.step);
+  } else if(r.instructions){
+    steps = [r.instructions.replace(/<[^>]+>/g,' ').trim()];
+  }
+  return {
+    id: 'sp-'+r.id,
+    name: r.title,
+    mealType: 'dinner',
+    time: r.readyInMinutes || 30,
+    tags,
+    servingsBase: r.servings || BASE_SERVINGS,
+    nutrition: { calories: findN('Calories'), protein: findN('Protein'), fat: findN('Fat'), carbs: findN('Carbohydrates'), fiber: findN('Fiber'), sodium: findN('Sodium'), sugars: findN('Sugar') },
+    nutritionSource: 'spoonacular',
+    ingredients: (r.extendedIngredients||[]).map(ing=>({
+      name: ing.nameClean || ing.name || 'ingredient',
+      qty: ing.amount || 0,
+      unit: ing.unit || '',
+      category: mapAisleToCategory(ing.aisle),
+      image: ing.image || null
+    })),
+    steps,
+    sourceUrl: r.sourceUrl || r.spoonacularSourceUrl || null,
+    isExternal: true
+  };
+}
+
+function spoonacularErrorMessage(e){
+  if(e.message==='BAD_KEY') return 'That Spoonacular API key looks invalid.';
+  if(e.message==='QUOTA') return "You've hit today's free Spoonacular request limit.";
+  return 'Could not reach Spoonacular.';
+}
+
+async function fetchSpoonacularRecipes(n, dietVal){
+  const key = getSpoonacularKey();
+  let url = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${encodeURIComponent(key)}&type=main+course&number=${n}&addRecipeInformation=true&addRecipeNutrition=true&fillIngredients=true&instructionsRequired=true`;
+  if(dietVal) url += `&diet=${encodeURIComponent(dietVal)}`;
+  const res = await fetch(url);
+  if(res.status === 401) throw new Error('BAD_KEY');
+  if(res.status === 402) throw new Error('QUOTA');
+  if(!res.ok) throw new Error('HTTP_'+res.status);
+  const data = await res.json();
+  return (data.results||[]).map(mapSpoonacularRecipe);
+}
+
+function setPlanStatus(msg, isError){
+  const el = $('planStatus');
+  el.textContent = msg || '';
+  el.className = 'status-msg' + (isError?' error':'');
+}
+
+$('generateBtn').addEventListener('click', async ()=>{
+  const n = parseInt($('numMeals').value, 10);
+  const dietVal = $('dietFilter').value;
+  const key = getSpoonacularKey();
+  const dietMeta = DIET_OPTIONS.find(d=>d.value===dietVal);
+  const needsKey = dietMeta && !dietMeta.local;
+
+  if(needsKey && !key){
+    setPlanStatus(`"${dietMeta.label}" needs a Spoonacular API key — add one in Settings above, or choose "No preference" / "Vegetarian-friendly".`, true);
+    return;
+  }
+
+  $('generateBtn').disabled = true;
+  setPlanStatus(key ? 'Fetching recipes…' : 'Building your week…');
+  try{
+    if(key){
+      currentPool = await fetchSpoonacularRecipes(Math.max(n*2, 10), dietVal);
+      if(currentPool.length === 0){
+        setPlanStatus('Spoonacular returned no matching recipes for that filter — try a broader diet option.', true);
+      }
+    } else {
+      currentPool = RECIPES.filter(r=>r.mealType==='dinner' && (!dietVal || r.tags.includes(dietVal)));
+    }
+    const chosen = pickRandom(currentPool, n, new Set());
+    currentPlan = chosen.map(r => ({recipe:r, locked:false}));
+    checkedItems = {};
+    renderPlan();
+    renderShoppingList();
+    $('shoppingSection').style.display = 'block';
+    if(currentPool.length) setPlanStatus('');
+  }catch(e){
+    if(key){
+      setPlanStatus(spoonacularErrorMessage(e) + ' Showing suggestions from the built-in recipe list instead.', true);
+      const dietOk = !dietVal || DIET_OPTIONS.find(d=>d.value===dietVal && d.local);
+      currentPool = dietOk ? RECIPES.filter(r=>r.mealType==='dinner' && (!dietVal || r.tags.includes(dietVal))) : [];
+      if(!currentPool.length) setPlanStatus(spoonacularErrorMessage(e) + ' The built-in list has no recipes for that diet — choose "No preference" or "Vegetarian-friendly".', true);
+      const chosen = pickRandom(currentPool, n, new Set());
+      currentPlan = chosen.map(r => ({recipe:r, locked:false}));
+      renderPlan();
+      renderShoppingList();
+      $('shoppingSection').style.display = 'block';
+    } else {
+      setPlanStatus('Something went wrong building your plan — try again.', true);
+    }
+  }finally{
+    $('generateBtn').disabled = false;
+  }
+});
+
+function swapRecipe(index){
+  const usedIds = new Set(currentPlan.map(p=>p.recipe.id));
+  const replacement = pickRandom(currentPool, 1, usedIds)[0];
+  if(replacement){
+    currentPlan[index] = {recipe:replacement, locked:false};
+    renderPlan();
+    renderShoppingList();
+  }
+}
+function toggleLock(index){
+  currentPlan[index].locked = !currentPlan[index].locked;
+  renderPlan();
+}
+
+function getServingsMultiplier(recipe){
+  const servings = parseInt($('servings').value, 10);
+  const base = (recipe && recipe.servingsBase) || BASE_SERVINGS;
+  return servings / base;
+}
+
+function formatQty(qty){
+  const rounded = Math.round(qty * 100) / 100;
+  if(Number.isInteger(rounded)) return String(rounded);
+  const frac = rounded - Math.floor(rounded);
+  const whole = Math.floor(rounded);
+  const fracStr = Math.abs(frac-0.25)<0.05?'¼':Math.abs(frac-0.5)<0.05?'½':Math.abs(frac-0.75)<0.05?'¾':Math.abs(frac-0.33)<0.05?'⅓':Math.abs(frac-0.67)<0.05?'⅔':null;
+  if(fracStr) return (whole>0? whole+' ':'') + fracStr;
+  return String(rounded);
+}
+
+function renderPlan(){
+  const grid = $('planGrid');
+  grid.innerHTML = '';
+  if(currentPlan.length === 0){
+    grid.innerHTML = '<div class="empty-note">Pick your options above and click "Build my week" to get started.</div>';
+    return;
+  }
+  const requested = parseInt($('numMeals').value, 10);
+  if(currentPlan.length < requested){
+    const warn = document.createElement('div');
+    warn.className = 'empty-note';
+    warn.style.cssText = 'grid-column:1/-1;background:#fff8e6;border:1px solid #f0ddaa;border-radius:10px;padding:10px;color:#7a5b0a;text-align:left;';
+    const dietLabel = $('dietFilter').selectedOptions[0].textContent;
+    warn.textContent = `Only found ${currentPlan.length} of the ${requested} dinners you asked for under "${dietLabel}" — that's every matching recipe currently available. Try a broader diet filter.`;
+    grid.appendChild(warn);
+  }
+  currentPlan.forEach((entry, idx)=>{
+    const r = entry.recipe;
+    const mult = getServingsMultiplier(r);
+    const card = document.createElement('div');
+    card.className = 'recipe-card' + (entry.locked ? ' locked' : '');
+    const ingredientsHtml = r.ingredients.map((ing,ii)=>
+      `<li><span class="ing-thumb" data-ing="${ii}">${ingredientEmoji(ing)}</span><span>${formatQty(ing.qty*mult)} ${escapeHtml(ing.unit)} ${escapeHtml(ing.name)}</span></li>`
+    ).join('');
+    const stepsHtml = r.steps.map(s=>`<li>${escapeHtml(s)}</li>`).join('');
+    const nutritionLine = (r.nutrition && r.nutrition.calories)
+      ? ` · ${r.nutrition.calories} cal, ${r.nutrition.protein||'?'}g protein (per serving)` + (r.nutritionSource==='usda' ? '<span class="est" title="Computed from USDA FoodData Central ingredient values; see audit">USDA est.</span>' : '<span class="unv" title="From Spoonacular; not independently checked">unverified</span>')
+      : (r.isExternal ? '' : ' · nutrition info not available for this recipe yet');
+    const sourceLink = r.isExternal && r.sourceUrl ? `<p><a href="${r.sourceUrl}" target="_blank">View original recipe ↗</a></p>` : '';
+    card.innerHTML = `
+      <h4>${escapeHtml(r.name)}</h4>
+      <div class="meta">${r.time} min${costLine(r, mult, parseInt($('servings').value,10))}${nutritionLine} ${r.tags.includes('vegetarian') ? '<span class="tag">VEG</span>' : ''}</div>
+      <div class="card-actions">
+        <button class="cook-btn" data-act="cook">Cook this</button>
+        <button class="lock-btn ${entry.locked?'active':''}" data-act="lock">${entry.locked?'🔒 Locked':'🔓 Lock'}</button>
+        <button data-act="swap" ${entry.locked?'disabled':''}>🔀 Swap</button>
+        <button data-act="log">📝 Log</button>
+      </div>
+      <button class="view-toggle" data-act="toggle">View recipe ▾</button>
+      <div class="recipe-detail" data-role="detail">
+        <b>Ingredients (for ${parseInt($('servings').value,10)} servings):</b>
+        <ul class="ing-pics">${ingredientsHtml}</ul>
+        <div class="pic-attrib" data-role="picattrib"></div>
+        <b>Steps:</b>
+        <ol>${stepsHtml}</ol>
+        ${sourceLink}
+      </div>
+    `;
+    card.querySelector('[data-act=cook]').onclick = ()=> openCook(r, mult, parseInt($('servings').value,10));
+    card.querySelector('[data-act=lock]').onclick = ()=> toggleLock(idx);
+    card.querySelector('[data-act=swap]').onclick = ()=> swapRecipe(idx);
+    card.querySelector('[data-act=log]').onclick = ()=>{
+      const calVal = (r.nutrition && r.nutrition.calories) ? Math.round(r.nutrition.calories) : null;
+      const proteinVal = (r.nutrition && r.nutrition.protein) ? Math.round(r.nutrition.protein) : null;
+      if(calVal == null){
+        alert('This recipe doesn\'t have nutrition info yet (add a Spoonacular key in Settings for that) — enter it manually in the Calorie Budget tab instead.');
+        return;
+      }
+      logFood(r.name + ' (1 serving)', calVal, proteinVal);
+    };
+    const toggleBtn = card.querySelector('[data-act=toggle]');
+    const detail = card.querySelector('[data-role=detail]');
+    toggleBtn.onclick = ()=>{
+      const open = detail.classList.toggle('open');
+      toggleBtn.textContent = open ? 'Hide recipe ▴' : 'View recipe ▾';
+      if(open) loadIngredientPictures(r, detail);
+    };
+    grid.appendChild(card);
+  });
+}
+
+$('servings').addEventListener('change', ()=>{ renderPlan(); renderShoppingList(); });
+
+function renderActiveStoreSelect(){
+  const sel = $('activeStoreSelect');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  stores.forEach(s=>{
+    const opt = document.createElement('option');
+    opt.value = s.id; opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+  if(stores.some(s=>s.id===prev)) sel.value = prev;
+}
+$('activeStoreSelect').addEventListener('change', renderShoppingList);
+
+function aggregateIngredients(){
+  const map = {};
+  shoppingEntries().forEach(entry=>{
+    const mult = getServingsMultiplier(entry.recipe);
+    entry.recipe.ingredients.forEach(ing=>{
+      const key = ing.name.toLowerCase() + '|' + (ing.unit||'').toLowerCase();
+      if(!map[key]) map[key] = {name:ing.name, unit:ing.unit||'', qty:0, category:ing.category};
+      map[key].qty += (ing.qty||0) * mult;
+    });
+  });
+  return Object.values(map);
+}
+
+function renderShoppingList(){
+  const container = $('shoppingList');
+  if(shoppingEntries().length === 0){
+    container.innerHTML = '<div class="empty-note">Build a weekly plan above to see your shopping list.</div>';
+    return;
+  }
+  const storeId = $('activeStoreSelect').value || (stores[0] && stores[0].id);
+  const items = aggregateIngredients();
+  const byCat = {};
+  items.forEach(it=>{ (byCat[it.category] = byCat[it.category]||[]).push(it); });
+
+  container.innerHTML = '';
+  { let tot = 0, miss = 0; shoppingEntries().forEach(e=>{ const c = recipeCost(e.recipe, getServingsMultiplier(e.recipe)); tot += c.total; miss += c.missing; });
+    const box = document.createElement('div'); box.className = 'shop-total';
+    box.innerHTML = `<span>Estimated cost of what this week's home meals use</span><b>${money(tot)}</b>` + (miss ? `<span>${miss} ingredient(s) not priced yet</span>` : '') + '<span>Your first shop costs more, since you buy whole packages (a dozen eggs, a bottle of oil).</span>';
+    container.appendChild(box); }
+  CAT_ORDER.filter(c=>byCat[c]).forEach(cat=>{
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    const currentAisle = (aisleMap[storeId] && aisleMap[storeId][cat]) || '';
+    block.innerHTML = `
+      <div class="cat-head">
+        <span class="cat-name">${CAT_LABELS[cat]}</span>
+        <span class="aisle-edit" data-role="aisle">${currentAisle ? 'Aisle ' + escapeHtml(currentAisle) + ' ✎' : '+ set aisle'}</span>
+      </div>
+    `;
+    const list = document.createElement('div');
+    byCat[cat].forEach(it=>{
+      const itemKey = storeId + '|' + it.name;
+      const row = document.createElement('div');
+      row.className = 'ing-row' + (checkedItems[itemKey] ? ' checked' : '');
+      row.innerHTML = `<label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" ${checkedItems[itemKey]?'checked':''}> <span>${formatQty(it.qty)} ${escapeHtml(it.unit)} ${escapeHtml(it.name)}</span></label>`;
+      row.querySelector('input').addEventListener('change', (e)=>{
+        checkedItems[itemKey] = e.target.checked;
+        row.classList.toggle('checked', e.target.checked);
+      });
+      list.appendChild(row);
+    });
+    block.appendChild(list);
+    const aisleSpan = block.querySelector('[data-role=aisle]');
+    aisleSpan.addEventListener('click', ()=>{
+      const val = prompt(`What aisle is "${CAT_LABELS[cat]}" in at ${(stores.find(s=>s.id===storeId)||{}).name || 'this store'}?`, currentAisle);
+      if(val !== null){
+        aisleMap[storeId] = aisleMap[storeId] || {};
+        aisleMap[storeId][cat] = val.trim();
+        saveAisles(aisleMap);
+        renderShoppingList();
+      }
+    });
+    container.appendChild(block);
+  });
+}
+
+/* ============================================================
+   v2 PROTOTYPE: INGREDIENT PICTURES
+   - Packaged goods (pantry / canned / frozen / dairy / bakery): real US product photo
+     from Open Food Facts (images CC BY-SA, credited under the list), looked up only when
+     a recipe is opened, at most 1 search every 7 s (OFF limit: 10 searches/min/IP), cached
+     in this browser so each ingredient is looked up once.
+   - Fresh produce / meat, or anything not found: a food emoji drawn by the device's own
+     emoji font (no image asset shipped, so nothing to license).
+   - Spoonacular recipes: Spoonacular's own ingredient image (served with your key's data).
+   ============================================================ */
+const ING_PICS = [
+  // [match (lowercase substring), emoji, Open Food Facts search terms or null for emoji-only]
+  ['marinara','🥫','marinara sauce'], ['tomato soup','🥫','condensed tomato soup'], ['diced tomatoes','🥫','diced tomatoes'],
+  ['kidney beans','🥫','red kidney beans'], ['chicken broth','🥫','chicken broth'], ['salsa','🫙','salsa'],
+  ['spaghetti','🍝','spaghetti pasta'], ['linguine','🍝','spaghetti pasta'], ['ziti','🍝','penne pasta'], ['penne','🍝','penne pasta'],
+  ['rice','🍚','long grain white rice'], ['taco seasoning','🧂','taco seasoning mix'], ['fajita seasoning','🧂','fajita seasoning mix'],
+  ['soy sauce','🍶','soy sauce'], ['olive oil','🫒','extra virgin olive oil'], ['vegetable oil','🫗','vegetable oil'],
+  ['salad dressing','🥗','italian dressing'], ['brown sugar','🍯','light brown sugar'], ['italian seasoning','🌿','italian seasoning'],
+  ['garlic powder','🧄','garlic powder'], ['chili powder','🌶️','chili powder'], ['cumin','🌿','ground cumin'],
+  ['black pepper','🧂','ground black pepper'], ['salt','🧂','iodized salt'],
+  ['peas and carrots','🥕','frozen peas and carrots'], ['stir-fry vegetable','🥦','stir fry vegetables frozen'],
+  ['parmesan','🧀','grated parmesan cheese'], ['ricotta','🧀','ricotta cheese'], ['mozzarella','🧀','shredded mozzarella'],
+  ['cheddar','🧀','cheddar cheese slices'], ['shredded cheese','🧀','shredded cheddar cheese'], ['sour cream','🥛','sour cream'],
+  ['butter','🧈','salted butter'], ['milk','🥛','whole milk'], ['egg','🥚',null],
+  ['sandwich bread','🍞','white sandwich bread'], ['tortilla','🫓','flour tortillas'], ['burger buns','🍔','hamburger buns'],
+  ['hoagie','🥖','hoagie rolls'], ['bagged salad','🥗','salad mix'],
+  ['ground beef','🥩',null], ['steak','🥩',null], ['sirloin','🥩',null], ['ground turkey','🦃',null], ['sausage','🌭',null],
+  ['chicken','🍗',null], ['salmon','🐟',null], ['shrimp','🦐',null],
+  ['onion','🧅',null], ['garlic','🧄',null], ['sweet potato','🍠',null], ['potato','🥔',null], ['green beans','🫛',null],
+  ['broccoli','🥦',null], ['asparagus','🌱',null], ['bell pepper','🫑',null], ['lettuce','🥬',null], ['tomato','🍅',null], ['lemon','🍋',null],
+];
+const CAT_EMOJI = {produce:'🥬', meat_seafood:'🥩', dairy_eggs:'🧀', bakery:'🍞', pantry:'🥫', frozen:'🧊', other:'🛒'};
+function ingPicEntry(ing){
+  const n = String(ing.name||'').toLowerCase();
+  return ING_PICS.find(p=> n.includes(p[0])) || null;
+}
+function ingredientEmoji(ing){
+  const e = ingPicEntry(ing);
+  return e ? e[1] : (CAT_EMOJI[ing.category] || '🛒');
+}
+const LS_PIC_CACHE = 'wt_ingpic_cache_v1';
+const PIC_CACHE_MAX_AGE = 30*24*60*60*1000;
+function loadPicCache(){ try{ return JSON.parse(localStorage.getItem(LS_PIC_CACHE)) || {}; }catch(e){ return {}; } }
+function savePicCache(c){ try{ localStorage.setItem(LS_PIC_CACHE, JSON.stringify(c)); }catch(e){} }
+let picCache = loadPicCache();
+const picInflight = {};
+let offQueue = Promise.resolve();
+let offLast = 0;
+const OFF_MIN_GAP_MS = 7000;
+
+function offSearch(terms){
+  // Serialize and space out requests to stay under Open Food Facts' search limit.
+  const run = async ()=>{
+    const wait = Math.max(0, offLast + OFF_MIN_GAP_MS - Date.now());
+    if(wait) await sleep(wait);
+    offLast = Date.now();
+    const url = 'https://world.openfoodfacts.org/cgi/search.pl?action=process&json=1&search_simple=1&page_size=10'
+      + '&sort_by=unique_scans_n&tagtype_0=countries&tag_contains_0=contains&tag_0=united-states'
+      + '&fields=code,product_name,brands,image_front_small_url&search_terms=' + encodeURIComponent(terms);
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP_'+res.status);
+    const data = await res.json();
+    const p = (data.products||[]).find(x=> x.image_front_small_url && /^https:\/\/images\.openfoodfacts\.org\//.test(x.image_front_small_url));
+    return p ? { src: p.image_front_small_url, code: String(p.code||''), label: [p.brands, p.product_name].filter(Boolean).join(' – ') } : { none: true };
+  };
+  const pr = offQueue.then(run, run);
+  offQueue = pr.catch(()=>{});
+  return pr;
+}
+function getOffPicture(terms){
+  const c = picCache[terms];
+  if(c && (Date.now()-c.t) < PIC_CACHE_MAX_AGE) return Promise.resolve(c.v);
+  if(picInflight[terms]) return picInflight[terms];
+  picInflight[terms] = offSearch(terms).then(v=>{
+    picCache[terms] = {t:Date.now(), v}; savePicCache(picCache);
+    return v;
+  }).catch(()=> ({ none:true, error:true })).finally(()=>{ delete picInflight[terms]; });
+  return picInflight[terms];
+}
+function setThumbImage(el, src, href, title){
+  const img = new Image();
+  img.alt = title || '';
+  img.onload = ()=>{
+    el.innerHTML = '';
+    if(href){ const a = document.createElement('a'); a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.title = title||''; a.appendChild(img); el.appendChild(a); }
+    else { el.title = title||''; el.appendChild(img); }
+  };
+  img.onerror = ()=>{ /* keep the emoji fallback */ };
+  img.src = src;
+}
+function loadIngredientPictures(recipe, detailEl){
+  const thumbs = detailEl.querySelectorAll('.ing-thumb[data-ing]');
+  const attrib = detailEl.querySelector('[data-role=picattrib]');
+  let usedOff = false, usedSpoon = false;
+  const updateAttrib = ()=>{
+    const parts = [];
+    if(usedOff) parts.push('Product photos: <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA</a> — tap a photo for its source. Brands shown are examples only, not recommendations.');
+    if(usedSpoon) parts.push('Ingredient images: <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">spoonacular</a>.');
+    if(attrib) attrib.innerHTML = parts.join(' ');
+  };
+  thumbs.forEach(el=>{
+    if(el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    const ing = recipe.ingredients[parseInt(el.dataset.ing,10)];
+    if(!ing) return;
+    if(recipe.isExternal && ing.image){
+      const file = String(ing.image).split('/').pop();
+      usedSpoon = true; updateAttrib();
+      setThumbImage(el, 'https://img.spoonacular.com/ingredients_100x100/' + encodeURIComponent(file), null, ing.name);
+      return;
+    }
+    const entry = ingPicEntry(ing);
+    const terms = entry ? entry[2] : (['pantry','frozen','dairy_eggs','bakery'].includes(ing.category) ? String(ing.name).toLowerCase().replace(/\(.*?\)/g,'').trim() : null);
+    if(!terms) return; // fresh item: emoji only
+    getOffPicture(terms).then(v=>{
+      if(!v || v.none || !v.src) return;
+      usedOff = true; updateAttrib();
+      setThumbImage(el, v.src, v.code ? 'https://world.openfoodfacts.org/product/' + encodeURIComponent(v.code) : 'https://world.openfoodfacts.org', 'Example: ' + (v.label || ing.name) + ' (Open Food Facts, CC BY-SA)');
+    });
+  });
+}
+
+/* ============================================================
+   SUGGEST TAB
+   ============================================================ */
+const LS_MENU_CACHE = 'wt_menu_cache_v1';
+const MENU_CACHE_MAX_AGE = 7*24*60*60*1000;
+
+function loadMenuCache(){ try{ return JSON.parse(localStorage.getItem(LS_MENU_CACHE)) || {}; }catch(e){ return {}; } }
+function saveMenuCache(c){ localStorage.setItem(LS_MENU_CACHE, JSON.stringify(c)); }
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+function switchTab(name){
+  const btn = document.querySelector(`.tab-btn[data-tab="${name}"]`);
+  if(btn) btn.click();
+}
+
+async function scanAllRestaurants(onProgress){
+  const cache = loadMenuCache();
+  const now = Date.now();
+  const all = [];
+  for(let i=0; i<RESTAURANTS.length; i++){
+    const r = RESTAURANTS[i];
+    onProgress(i+1, RESTAURANTS.length, r.name);
+    let items;
+    const cached = cache[r.slug];
+    if(cached && (now - cached.fetchedAt) < MENU_CACHE_MAX_AGE){
+      items = cached.items;
+    } else {
+      try{
+        const data = await nomApiGet('/restaurant/'+r.slug);
+        items = data.items;
+        cache[r.slug] = { items, fetchedAt: now };
+        saveMenuCache(cache);
+        menuCache[r.slug] = items;
+        await sleep(3200);
+      }catch(e){
+        items = cached ? cached.items : [];
+        await sleep(1000);
+      }
+    }
+    items.forEach(it=> all.push(Object.assign({}, it, {restaurantSlug:r.slug})));
+  }
+  return all;
+}
+
+function matchScore(cal, protein, targetCal, targetProtein){
+  const calDiff = Math.abs(cal - targetCal);
+  const proteinShort = Math.max(0, targetProtein - protein);
+  return calDiff + proteinShort*4;
+}
+
+function setSugStatus(msg, isError){
+  const el = $('sugStatus');
+  el.textContent = msg || '';
+  el.className = 'status-msg' + (isError?' error':'');
+}
+
+$('sugAdvToggle').addEventListener('click', ()=>{
+  const row = $('sugAdvRow');
+  const show = row.style.display === 'none';
+  row.style.display = show ? 'flex' : 'none';
+  $('sugAdvToggle').textContent = (show ? 'Hide extra filters' : 'More filters (fiber, sodium, sugar)') + (show ? ' ▴' : ' ▾');
+});
+
+function getSugTargets(){
+  return {
+    calories: parseFloat($('sugCalories').value) || 500,
+    protein: parseFloat($('sugProtein').value) || 0,
+    fiber: $('sugFiber').value ? parseFloat($('sugFiber').value) : null,
+    sodium: $('sugSodium').value ? parseFloat($('sugSodium').value) : null,
+    sugar: $('sugSugar').value ? parseFloat($('sugSugar').value) : null,
+  };
+}
+
+$('sugFindBtn').addEventListener('click', async ()=>{
+  const targets = getSugTargets();
+  $('sugFindBtn').disabled = true;
+  await Promise.all([
+    findEatingOutMatches(targets),
+    findHomeMatches(targets)
+  ]);
+  $('sugFindBtn').disabled = false;
+});
+
+async function findEatingOutMatches(targets){
+  const box = $('sugEatingOutResults');
+  box.innerHTML = '<div class="empty-note">Checking menus…</div>';
+  const hasAdvanced = targets.fiber!=null || targets.sodium!=null || targets.sugar!=null;
+  try{
+    const all = await scanAllRestaurants((i, total, name)=>{
+      setSugStatus(`Checking ${name}… (${i} of ${total})`);
+    });
+    setSugStatus('');
+    const range = Math.max(150, targets.calories*0.35);
+    let candidates = all.filter(it=>
+      it.calories >= (targets.calories-range) && it.calories <= (targets.calories+range) &&
+      it.protein >= targets.protein*0.7
+    ).map(it=> Object.assign({}, it, {score: matchScore(it.calories, it.protein, targets.calories, targets.protein)}))
+     .sort((a,b)=>a.score-b.score);
+
+    if(hasAdvanced){
+      candidates = candidates.slice(0, 40);
+      setSugStatus('Checking fiber/sodium/sugar for close matches…');
+      const idsNeeded = candidates.map(c=>c.id);
+      for(let i=0; i<idsNeeded.length; i+=10){
+        const chunk = idsNeeded.slice(i, i+10);
+        try{
+          const data = await nomApiGet('/compare?ids=' + chunk.map(encodeURIComponent).join(','));
+          data.items.forEach(full=>{
+            const c = candidates.find(x=>x.id===full.id);
+            if(c) c.fullNutrition = full.nutrition;
+          });
+        }catch(e){ /* skip chunk on failure, filtered out below */ }
+      }
+      candidates = candidates.filter(c=>{
+        if(!c.fullNutrition) return false;
+        if(targets.fiber!=null && c.fullNutrition.dietary_fiber < targets.fiber) return false;
+        if(targets.fiber!=null && c.fullNutrition.dietary_fiber == null) return false;
+        if(targets.sodium!=null && (c.fullNutrition.sodium == null || c.fullNutrition.sodium > targets.sodium)) return false;
+        if(targets.sugar!=null && (c.fullNutrition.sugars == null || c.fullNutrition.sugars > targets.sugar)) return false;
+        return true;
+      });
+      setSugStatus('');
+    }
+
+    const matches = candidates.slice(0,8);
+    if(matches.length === 0){
+      box.innerHTML = '<div class="empty-note">No close matches found across the 31 chains. Try widening your targets.</div>';
+      return;
+    }
+    box.innerHTML = '';
+    matches.forEach(it=>{
+      const restName = RESTAURANTS.find(r=>r.slug===it.restaurantSlug);
+      const extra = it.fullNutrition ? ` · <b>${it.fullNutrition.dietary_fiber}g</b> fiber · <b>${it.fullNutrition.sodium}mg</b> sodium · <b>${it.fullNutrition.sugars}g</b> sugar` : '';
+      const card = document.createElement('div');
+      card.className = 'sug-card';
+      card.innerHTML = `
+        <div class="sug-title">${escapeHtml(it.name)}</div>
+        <div class="sug-sub">${escapeHtml(restName ? restName.name : '')}${it.category ? ' · '+escapeHtml(it.category):''}</div>
+        <div class="sug-stats"><b>${it.calories}</b> cal · <b>${it.protein}g</b> protein${extra}<span class="unv">unverified</span></div>
+        <button class="ghost-btn" data-act="add">+ Add to Eating Out comparison</button>
+      `;
+      card.querySelector('[data-act=add]').addEventListener('click', ()=>{
+        const side = eoState.A.items.size === 0 ? 'A' : 'B';
+        addItemEO(side, it);
+        switchTab('eatingout');
+      });
+      box.appendChild(card);
+    });
+  }catch(e){
+    box.innerHTML = '<div class="empty-note">Could not check restaurant menus. Check your connection and try again.</div>';
+    setSugStatus('');
+  }
+}
+
+async function findHomeMatches(targets){
+  const box = $('sugHomeResults');
+  const key = getSpoonacularKey();
+  if(!key){
+    // v2: built-in recipes now carry USDA-computed nutrition, so match against them.
+    const range = Math.max(150, targets.calories*0.35);
+    const local = RECIPES.filter(r=>r.nutrition &&
+        r.nutrition.calories >= targets.calories-range && r.nutrition.calories <= targets.calories+range &&
+        r.nutrition.protein >= targets.protein*0.8 &&
+        (targets.fiber==null || r.nutrition.fiber >= targets.fiber) &&
+        (targets.sodium==null || r.nutrition.sodium <= targets.sodium) &&
+        (targets.sugar==null || r.nutrition.sugars <= targets.sugar))
+      .map(r=>({r, score: matchScore(r.nutrition.calories, r.nutrition.protein, targets.calories, targets.protein)}))
+      .sort((a,b)=>a.score-b.score).slice(0,8).map(x=>x.r);
+    if(!local.length){ box.innerHTML = '<div class="empty-note">No built-in recipe is close to those targets. Widen them, or add a Spoonacular key (Cooking at Home → Settings) for thousands more recipes.</div>'; return; }
+    box.innerHTML = '';
+    local.forEach(r=>{
+      const card = document.createElement('div');
+      card.className = 'sug-card';
+      card.innerHTML = `
+        <div class="sug-title">${escapeHtml(r.name)}</div>
+        <div class="sug-sub">${r.time} min · built-in recipe</div>
+        <div class="sug-stats"><b>${r.nutrition.calories}</b> cal · <b>${r.nutrition.protein}g</b> protein · <b>${r.nutrition.fiber}g</b> fiber · <b>${r.nutrition.sodium}mg</b> sodium (per serving)<span class="est">USDA est.</span></div>
+        <button class="ghost-btn" data-act="add">+ Add to this week's plan</button>`;
+      card.querySelector('[data-act=add]').addEventListener('click', ()=>{
+        currentPlan.push({recipe:r, locked:false});
+        checkedItems = {}; renderPlan(); renderShoppingList();
+        $('shoppingSection').style.display = 'block';
+        switchTab('cookingathome');
+      });
+      box.appendChild(card);
+    });
+    return;
+  }
+  box.innerHTML = '<div class="empty-note">Searching recipes…</div>';
+  try{
+    const range = Math.max(150, targets.calories*0.35);
+    const minCal = Math.max(0, Math.round(targets.calories-range));
+    const maxCal = Math.round(targets.calories+range);
+    const minProtein = Math.round(targets.protein*0.8);
+    let url = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${encodeURIComponent(key)}&number=8&minCalories=${minCal}&maxCalories=${maxCal}&minProtein=${minProtein}&addRecipeInformation=true&addRecipeNutrition=true&fillIngredients=true&instructionsRequired=true`;
+    if(targets.fiber!=null) url += `&minFiber=${Math.round(targets.fiber)}`;
+    if(targets.sodium!=null) url += `&maxSodium=${Math.round(targets.sodium)}`;
+    if(targets.sugar!=null) url += `&maxSugar=${Math.round(targets.sugar)}`;
+    const res = await fetch(url);
+    if(res.status===401) throw new Error('BAD_KEY');
+    if(res.status===402) throw new Error('QUOTA');
+    if(!res.ok) throw new Error('HTTP_'+res.status);
+    const data = await res.json();
+    const mapped = (data.results||[]).map(mapSpoonacularRecipe)
+      .map(r=> Object.assign(r, {score: matchScore(r.nutrition.calories||0, r.nutrition.protein||0, targets.calories, targets.protein)}))
+      .sort((a,b)=>a.score-b.score);
+
+    if(mapped.length === 0){
+      box.innerHTML = '<div class="empty-note">No close recipe matches — try widening your targets.</div>';
+      return;
+    }
+    box.innerHTML = '';
+    mapped.forEach(r=>{
+      const card = document.createElement('div');
+      card.className = 'sug-card';
+      card.innerHTML = `
+        <div class="sug-title">${escapeHtml(r.name)}</div>
+        <div class="sug-sub">${r.time} min ${r.sourceUrl ? `· <a href="${r.sourceUrl}" target="_blank">source ↗</a>` : ''}</div>
+        <div class="sug-stats"><b>${r.nutrition.calories||'?'}</b> cal · <b>${r.nutrition.protein||'?'}g</b> protein (per serving)<span class="unv">unverified</span></div>
+        <button class="ghost-btn" data-act="add">+ Add to this week's plan</button>
+      `;
+      card.querySelector('[data-act=add]').addEventListener('click', ()=>{
+        currentPlan.push({recipe:r, locked:false});
+        checkedItems = {};
+        renderPlan();
+        renderShoppingList();
+        $('shoppingSection').style.display = 'block';
+        switchTab('cookingathome');
+      });
+      box.appendChild(card);
+    });
+  }catch(e){
+    box.innerHTML = `<div class="empty-note">${spoonacularErrorMessage(e)}</div>`;
+  }
+}
+
+/* ============================================================
+   MOOD / "FEELING ___" TAB
+   ============================================================ */
+const MOODS = [
+  {id:'healthy', emoji:'😌', label:'Healthy', desc:'Solid nutrition pick'},
+  {id:'indulgent', emoji:'🎉', label:'Indulgent', desc:'Treat yourself'},
+  {id:'adventurous', emoji:'🧭', label:'Adventurous', desc:'Not your usual'},
+  {id:'quick', emoji:'⚡', label:'Quick', desc:'Fast & low-effort'},
+  {id:'comfort', emoji:'🍲', label:'Comfort food', desc:'Classic & hearty'},
+  {id:'surprise', emoji:'🎲', label:'Surprise me', desc:'Fully random'},
+];
+let selectedMood = 'healthy';
+
+function renderMoodGrid(){
+  const grid = $('moodGrid');
+  grid.innerHTML = '';
+  MOODS.forEach(m=>{
+    const card = document.createElement('div');
+    card.className = 'mood-card' + (m.id===selectedMood ? ' selected' : '');
+    card.innerHTML = `<span class="m-emoji">${m.emoji}</span><b>${m.label}</b><div class="m-desc">${m.desc}</div>`;
+    card.addEventListener('click', ()=>{ selectedMood = m.id; renderMoodGrid(); });
+    grid.appendChild(card);
+  });
+}
+renderMoodGrid();
+
+function setMoodStatus(msg, isError){
+  const el = $('moodStatus');
+  el.textContent = msg || '';
+  el.className = 'status-msg' + (isError?' error':'');
+}
+
+const LS_MOOD_HIST = 'wt_mood_history';
+function loadMoodHistory(){ try{ return JSON.parse(localStorage.getItem(LS_MOOD_HIST)) || {eatingout:[], home:[]}; }catch(e){ return {eatingout:[], home:[]}; } }
+function pushMoodHistory(source, id){
+  const h = loadMoodHistory();
+  h[source] = [id, ...h[source].filter(x=>x!==id)].slice(0,5);
+  localStorage.setItem(LS_MOOD_HIST, JSON.stringify(h));
+}
+function getMoodHistory(source){ return loadMoodHistory()[source] || []; }
+
+$('moodPickBtn').addEventListener('click', async ()=>{
+  $('moodPickBtn').disabled = true;
+  const requestedSource = $('moodSource').value;
+  const useSource = requestedSource === 'either' ? (Math.random()<0.5 ? 'eatingout' : 'cookingathome') : requestedSource;
+  try{
+    if(useSource === 'eatingout'){
+      await pickEatingOutMood(selectedMood);
+    } else {
+      await pickHomeMood(selectedMood);
+    }
+    setMoodStatus('');
+  }catch(e){
+    setMoodStatus('Could not find a pick right now — try again, or try a different mood/source.', true);
+    $('moodResult').innerHTML = '';
+  }finally{
+    $('moodPickBtn').disabled = false;
+  }
+});
+
+async function pickEatingOutMood(mood){
+  const all = await scanAllRestaurants((i,total,name)=> setMoodStatus(`Checking ${name}… (${i} of ${total})`));
+  setMoodStatus('Picking…');
+  const history = getMoodHistory('eatingout');
+  const comfortCats = ['Burgers','Chicken','Mexican','Bowls & More'];
+  let pool = all, logicText = '';
+  switch(mood){
+    case 'healthy':
+      pool = all.filter(it=> it.grade==='A' || it.grade==='B');
+      logicText = 'Picked randomly from items Nom grades A or B.';
+      if(!pool.length){ pool = all; logicText = 'No A/B graded items turned up in the scan, so this is a random pick from everything.'; }
+      break;
+    case 'indulgent':
+      pool = all.filter(it=> it.grade==='D' || it.grade==='F');
+      logicText = 'Picked randomly from items Nom grades D or F — the "treat yourself" tier.';
+      if(!pool.length){
+        const sorted = [...all].sort((a,b)=>b.calories-a.calories);
+        pool = sorted.slice(0, Math.max(5, Math.ceil(sorted.length*0.2)));
+        logicText = 'No D/F graded items in the scan, so this is a random pick from the highest-calorie 20% instead.';
+      }
+      break;
+    case 'adventurous':
+      pool = all.filter(it=> !history.includes(it.id));
+      logicText = `Picked randomly, excluding your last ${history.length} Eating Out picks, so you get some variety.`;
+      if(!pool.length){ pool = all; logicText = 'You\'ve seen everything recently — picked randomly from the full 31-chain list.'; }
+      break;
+    case 'quick':
+      pool = all;
+      logicText = 'Fast food is quick by nature, so this is just a random pick across all 31 chains.';
+      break;
+    case 'comfort':
+      pool = all.filter(it=>{ const r = RESTAURANTS.find(x=>x.slug===it.restaurantSlug); return r && comfortCats.includes(r.cat); });
+      logicText = 'Picked randomly from hearty chain categories (burgers, chicken, Mexican, bowls).';
+      if(!pool.length){ pool = all; }
+      break;
+    default:
+      pool = all;
+      logicText = 'Completely random pick, no filtering at all, across all 31 chains.';
+  }
+  const pick = pool[Math.floor(Math.random()*pool.length)];
+  if(!pick) throw new Error('EMPTY_POOL');
+  pushMoodHistory('eatingout', pick.id);
+  renderMoodResult('eatingout', mood, pick, logicText);
+}
+
+async function pickHomeMood(mood){
+  const key = getSpoonacularKey();
+  const history = getMoodHistory('home');
+  let picked = null, logicText = '';
+  if(key){
+    let sort='random', extra='', query='';
+    switch(mood){
+      case 'healthy': sort='healthiness'; logicText='Asked Spoonacular for recipes sorted by its healthiness score, then picked randomly from the top few.'; break;
+      case 'indulgent': sort='calories'; extra='&sortDirection=desc'; logicText='Asked Spoonacular for recipes sorted by calories (highest first), then picked randomly from the top few — the indulgent end.'; break;
+      case 'adventurous': sort='random'; logicText='Asked Spoonacular for a random recipe, excluding your recent picks.'; break;
+      case 'quick': sort='time'; logicText='Asked Spoonacular for recipes sorted by ready time (fastest first), then picked randomly from the top few.'; break;
+      case 'comfort': sort='popularity'; query='comfort food'; logicText='Searched Spoonacular for "comfort food", sorted by popularity, then picked randomly from the top few.'; break;
+      default: sort='random'; logicText='Asked Spoonacular for a fully random recipe.';
+    }
+    let url = `https://api.spoonacular.com/recipes/complexSearch?apiKey=${encodeURIComponent(key)}&type=main+course&number=8&addRecipeInformation=true&addRecipeNutrition=true&fillIngredients=true&instructionsRequired=true&sort=${sort}${extra}`;
+    if(query) url += '&query=' + encodeURIComponent(query);
+    const res = await fetch(url);
+    if(res.status===401) throw new Error('BAD_KEY');
+    if(res.status===402) throw new Error('QUOTA');
+    if(!res.ok) throw new Error('HTTP_'+res.status);
+    const data = await res.json();
+    let results = (data.results||[]).map(mapSpoonacularRecipe);
+    if(mood==='adventurous'){
+      const filtered = results.filter(r=>!history.includes(r.id));
+      if(filtered.length) results = filtered;
+      else logicText += ' (You\'ve seen everything recently, so this may repeat a past pick.)';
+    }
+    if(!results.length) throw new Error('EMPTY_POOL');
+    const topN = (mood==='adventurous'||mood==='surprise'||!mood) ? results.length : Math.min(5, results.length);
+    picked = results[Math.floor(Math.random()*topN)];
+  } else {
+    let pool = RECIPES.filter(r=>r.mealType==='dinner');
+    switch(mood){
+      case 'healthy': pool = pool.filter(r=>r.nutrition && r.nutrition.calories<=600 && r.nutrition.saturated_fat<=6); logicText='Picked randomly from built-in recipes with 600 calories or less and 6 g saturated fat or less per serving (USDA-computed estimates).'; break;
+      case 'indulgent': pool = pool.filter(r=>r.tags.includes('comfort')); logicText='Picked randomly from recipes tagged as rich comfort dishes.'; break;
+      case 'comfort': pool = pool.filter(r=>r.tags.includes('comfort')); logicText='Picked randomly from recipes tagged comfort food.'; break;
+      case 'quick': pool = pool.filter(r=>r.time<=20); logicText='Picked randomly from recipes that take 20 minutes or less.'; break;
+      case 'adventurous': { const filtered = pool.filter(r=>!history.includes(r.id)); if(filtered.length) pool = filtered; logicText='Picked randomly, excluding your last few Cooking at Home picks.'; break; }
+      default: logicText='Completely random pick from the built-in recipe list.';
+    }
+    if(!pool.length) pool = RECIPES.filter(r=>r.mealType==='dinner');
+    picked = pool[Math.floor(Math.random()*pool.length)];
+  }
+  if(!picked) throw new Error('EMPTY_POOL');
+  pushMoodHistory('home', picked.id);
+  renderMoodResult('cookingathome', mood, picked, logicText);
+}
+
+function renderMoodResult(source, mood, item, logicText){
+  const box = $('moodResult');
+  const moodMeta = MOODS.find(m=>m.id===mood);
+  if(source === 'eatingout'){
+    const rest = RESTAURANTS.find(r=>r.slug===item.restaurantSlug);
+    box.innerHTML = `
+      <div class="mood-result-card">
+        <div class="m-source">🍔 Eating out</div>
+        <h3>${moodMeta.emoji} ${escapeHtml(item.name)}</h3>
+        <div class="m-sub">${escapeHtml(rest ? rest.name : '')}${item.category ? ' · '+escapeHtml(item.category) : ''}</div>
+        <div class="m-stats"><b>${item.calories}</b> cal · <b>${item.protein||'?'}g</b> protein<span class="unv">unverified</span></div>
+        <button class="ghost-btn" data-act="add">+ Add to Eating Out comparison</button>
+        <button class="ghost-btn" data-act="log">+ Log this</button>
+        <div class="mood-logic-box"><b>How this pick was made:</b> ${escapeHtml(logicText)}</div>
+      </div>`;
+    box.querySelector('[data-act=add]').addEventListener('click', ()=>{
+      const side = eoState.A.items.size === 0 ? 'A' : 'B';
+      addItemEO(side, item);
+      switchTab('eatingout');
+    });
+    box.querySelector('[data-act=log]').addEventListener('click', ()=> logFood(item.name, item.calories, item.protein));
+  } else {
+    const nutritionLine = (item.nutrition && item.nutrition.calories) ? `<div class="m-stats"><b>${item.nutrition.calories}</b> cal · <b>${item.nutrition.protein||'?'}g</b> protein (per serving)${item.nutritionSource==='usda' ? '<span class="est">USDA est.</span>' : '<span class="unv">unverified</span>'}</div>` : '<div class="m-stats" style="color:var(--sub);font-size:12.5px;">Nutrition info not available for this recipe.</div>';
+    box.innerHTML = `
+      <div class="mood-result-card">
+        <div class="m-source">🍳 Cooking at home</div>
+        <h3>${moodMeta.emoji} ${escapeHtml(item.name)}</h3>
+        <div class="m-sub">${item.time} min${item.sourceUrl ? ` · <a href="${item.sourceUrl}" target="_blank">source ↗</a>` : ''}</div>
+        ${nutritionLine}
+        <button class="ghost-btn" data-act="add">+ Add to this week's plan</button>
+        ${(item.nutrition && item.nutrition.calories) ? '<button class="ghost-btn" data-act="log">+ Log this</button>' : ''}
+        <div class="mood-logic-box"><b>How this pick was made:</b> ${escapeHtml(logicText)}</div>
+      </div>`;
+    box.querySelector('[data-act=add]').addEventListener('click', ()=>{
+      currentPlan.push({recipe:item, locked:false});
+      checkedItems = {};
+      renderPlan();
+      renderShoppingList();
+      $('shoppingSection').style.display = 'block';
+      switchTab('cookingathome');
+    });
+    const logBtn = box.querySelector('[data-act=log]');
+    if(logBtn) logBtn.addEventListener('click', ()=> logFood(item.name+' (1 serving)', item.nutrition.calories, item.nutrition.protein));
+  }
+}
+
+/* ============================================================
+   CALORIE BUDGET TAB
+   ============================================================ */
+// v2 fix: use the LOCAL calendar date (toISOString() is UTC, so in Texas the log rolled over at 7 pm CDT / 6 pm CST).
+function getTodayKey(){ const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+const LS_BUDGET_PROFILE = 'wt_budget_profile';
+function loadBudgetProfile(){ try{ return JSON.parse(localStorage.getItem(LS_BUDGET_PROFILE)) || {}; }catch(e){ return {}; } }
+function saveBudgetProfile(p){ localStorage.setItem(LS_BUDGET_PROFILE, JSON.stringify(p)); }
+
+function loadFoodLog(){ try{ return JSON.parse(localStorage.getItem('wt_foodlog_'+getTodayKey())) || []; }catch(e){ return []; } }
+function saveFoodLog(list){ localStorage.setItem('wt_foodlog_'+getTodayKey(), JSON.stringify(list)); }
+
+function logFood(desc, calories, protein){
+  const list = loadFoodLog();
+  list.push({desc: desc || 'Food', calories: Math.round(calories)||0, protein: (protein!=null && !isNaN(protein)) ? Math.round(protein) : null, ts: Date.now()});
+  saveFoodLog(list);
+  renderFoodLog();
+  renderBudgetSummary();
+}
+
+function renderFoodLog(){
+  const list = loadFoodLog();
+  const box = $('foodLogList');
+  if(!box) return;
+  if(!list.length){ box.innerHTML = '<div class="empty-note">Nothing logged yet today.</div>'; return; }
+  box.innerHTML = list.map((it,i)=>
+    `<div class="foodlog-row"><div><div class="fl-name">${escapeHtml(it.desc)}</div><div class="fl-meta">${it.calories} cal${it.protein? ' · '+it.protein+'g protein':''}</div></div><button class="remove-btn" data-idx="${i}">✕</button></div>`
+  ).join('');
+  box.querySelectorAll('button[data-idx]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const l = loadFoodLog();
+      l.splice(parseInt(btn.dataset.idx,10),1);
+      saveFoodLog(l);
+      renderFoodLog();
+      renderBudgetSummary();
+    });
+  });
+}
+
+$('flAddBtn').addEventListener('click', ()=>{
+  const desc = $('flDesc').value.trim();
+  const cal = parseFloat($('flCal').value);
+  const protein = parseFloat($('flProtein').value);
+  if(!desc || isNaN(cal)){ alert('Enter at least a description and a calorie count.'); return; }
+  logFood(desc, cal, isNaN(protein) ? null : protein);
+  $('flDesc').value=''; $('flCal').value=''; $('flProtein').value='';
+});
+$('flClearBtn').addEventListener('click', ()=>{
+  if(confirm("Clear all of today's logged food?")){ saveFoodLog([]); renderFoodLog(); renderBudgetSummary(); }
+});
+
+function calcBMR(weightKg, heightCm, age, sex){
+  const base = 10*weightKg + 6.25*heightCm - 5*age;
+  return sex==='male' ? base+5 : base-161;
+}
+const ACTIVITY_MULT = {sedentary:1.2, light:1.375, moderate:1.55, active:1.725};
+
+// v2 fix: "x || default" turned a real 0 (e.g. exactly 6 ft 0 in) into the default (6 ft 8 in).
+function numOr(v, d){ const n = parseFloat(v); return isNaN(n) ? d : n; }
+function getBudgetProfile(){
+  return {
+    weight: numOr($('bWeight').value, 160),
+    weightUnit: $('bWeightUnit').value,
+    heightFt: numOr($('bHeightFt').value, 5),
+    heightIn: numOr($('bHeightIn').value, 8),
+    age: numOr($('bAge').value, 30),
+    sex: $('bSex').value,
+    activity: $('bActivity').value,
+  };
+}
+
+function renderBudgetSummary(){
+  const p = getBudgetProfile();
+  saveBudgetProfile(p);
+  const weightKg = p.weightUnit==='kg' ? p.weight : p.weight*0.453592;
+  const heightCm = (p.heightFt*12 + p.heightIn) * 2.54;
+  const bmr = calcBMR(weightKg, heightCm, p.age, p.sex);
+  const mult = ACTIVITY_MULT[p.activity] || 1.2;
+  const baseBurn = bmr * mult;
+  const steps = parseFloat($('bSteps').value) || 0;
+  localStorage.setItem('wt_steps_'+getTodayKey(), String(steps));
+  // v2 fix: NET walking cost (ACSM walking equation, 0.1 mL O2/kg/m, ~5 kcal/L O2, ~0.76 m per step ≈ 0.0004 kcal/kg/step).
+  // The old 0.00057 was a GROSS figure that re-counts resting calories already in BMR × activity.
+  const stepCalories = Math.round(steps * weightKg * 0.0004);
+  const addSteps = p.activity === 'sedentary';
+  const totalBudget = Math.round(baseBurn + (addSteps ? stepCalories : 0));
+  const log = loadFoodLog();
+  const eaten = log.reduce((s,it)=>s+(it.calories||0),0);
+  const remaining = totalBudget - eaten;
+  const pct = totalBudget>0 ? eaten/totalBudget : 0;
+  const remGrade = pct < 0.85 ? 'green' : (pct<=1.05 ? 'orange' : 'red');
+
+  $('budgetSummary').innerHTML = `
+    <div class="budget-stat"><div class="b-val">${Math.round(bmr)}</div><div class="b-label">Base metabolic burn (BMR)</div></div>
+    <div class="budget-stat"><div class="b-val">${Math.round(baseBurn)}</div><div class="b-label">× activity level</div></div>
+    <div class="budget-stat"><div class="b-val">${stepCalories}</div><div class="b-label">From ${Math.round(steps).toLocaleString()} steps${addSteps?'':' (reference only)'}</div></div>
+    <div class="budget-stat"><div class="b-val">${totalBudget}</div><div class="b-label">Today's estimated budget (maintenance — eat below this to lose weight)</div></div>
+    <div class="budget-stat"><div class="b-val">${eaten}</div><div class="b-label">Logged so far today</div></div>
+    <div class="budget-stat remaining ${remGrade}"><div class="b-val">${remaining}</div><div class="b-label">Remaining today</div></div>
+  `;
+}
+$('bUpdateBtn').addEventListener('click', renderBudgetSummary);
+['bWeight','bWeightUnit','bHeightFt','bHeightIn','bAge','bSex','bActivity'].forEach(id=>{
+  $(id).addEventListener('change', renderBudgetSummary);
+});
+
+function initBudgetTab(){
+  const p = loadBudgetProfile();
+  if(p.weight) $('bWeight').value = p.weight;
+  if(p.weightUnit) $('bWeightUnit').value = p.weightUnit;
+  if(p.heightFt!=null) $('bHeightFt').value = p.heightFt;
+  if(p.heightIn!=null) $('bHeightIn').value = p.heightIn;
+  if(p.age) $('bAge').value = p.age;
+  if(p.sex) $('bSex').value = p.sex;
+  if(p.activity) $('bActivity').value = p.activity;
+  const savedSteps = parseFloat(localStorage.getItem('wt_steps_'+getTodayKey()));
+  if(!isNaN(savedSteps)) $('bSteps').value = savedSteps;
+  renderFoodLog();
+  renderBudgetSummary();
+}
+
+/* ---- init ---- */
+renderStores();
+renderActiveStoreSelect();
+renderPlan();
+renderShoppingList();
+initBudgetTab();
+
+/* ============================================================
+   v4: BREAKFAST AND LUNCH RECIPES (for 4; nutrition per serving,
+   estimated from standard USDA FoodData Central values)
+   ============================================================ */
+Object.assign(PRICES, {
+  'eggs|whole':[0.20,'bls'], 'old-fashioned rolled oats|cups':[0.15,'est'], 'milk|cups':[0.24,'bls'],
+  'bananas|whole':[0.25,'bls'], 'peanut butter|tbsp':[0.09,'est'], 'plain greek yogurt|cups':[1.32,'est'],
+  'granola|cup':[0.80,'est'], 'frozen mixed berries|cups':[1.33,'est'], 'deli turkey|oz':[0.56,'est'],
+  'yellow mustard|tsp':[0.02,'est'], 'canned tuna in water|cans (5 oz)':[1.19,'est'], 'mayonnaise|tbsp':[0.08,'est'],
+  'refried beans|can (16 oz)':[1.19,'est'],
+});
+var BL_RECIPES = [
+  {id:'eggs-toast', name:'Scrambled Eggs and Toast', mealType:'breakfast', time:10, tags:['vegetarian'], servingsBase:4,
+   nutrition:{calories:320, protein:18}, nutritionSource:'usda',
+   ingredients:[{name:'Eggs', qty:8, unit:'whole', category:'dairy_eggs'},{name:'Butter', qty:1, unit:'tbsp', category:'dairy_eggs'},{name:'Sandwich bread', qty:8, unit:'slices', category:'bakery'},{name:'Salt', qty:1, unit:'pinch', category:'pantry'}],
+   steps:['Crack the 8 eggs into a bowl, add a pinch of salt, and beat with a fork until smooth.','Start the toast now so it is ready with the eggs.','Melt the butter in a nonstick pan over medium-low heat.','Pour in the eggs. Let them sit 20 seconds, then push them slowly from the edges to the middle with a spatula.','Take the pan off the heat while the eggs still look a little wet. They finish cooking on the plate, about 3 minutes total.']},
+  {id:'overnight-oats', name:'Peanut Butter Banana Overnight Oats', mealType:'breakfast', time:5, tags:['vegetarian'], servingsBase:4,
+   nutrition:{calories:370, protein:13}, nutritionSource:'usda',
+   ingredients:[{name:'Old-fashioned rolled oats', qty:2, unit:'cups', category:'pantry'},{name:'Milk', qty:2, unit:'cups', category:'dairy_eggs'},{name:'Peanut butter', qty:4, unit:'tbsp', category:'pantry'},{name:'Bananas', qty:2, unit:'whole', category:'produce'}],
+   steps:['The night before: set out 4 jars or containers with lids.','Put ½ cup oats and ½ cup milk in each one.','Stir 1 tablespoon of peanut butter into each.','Close the lids and put them in the fridge overnight.','In the morning, slice half a banana on top of each. Eat cold, or microwave 1 minute.']},
+  {id:'yogurt-parfait', name:'Greek Yogurt Berry Parfait', mealType:'breakfast', time:5, tags:['vegetarian'], servingsBase:4,
+   nutrition:{calories:260, protein:20}, nutritionSource:'usda',
+   ingredients:[{name:'Plain Greek yogurt', qty:3, unit:'cups', category:'dairy_eggs'},{name:'Frozen mixed berries', qty:2, unit:'cups', category:'frozen'},{name:'Granola', qty:1, unit:'cup', category:'pantry'}],
+   steps:['Take the berries out of the freezer 10 minutes before, or microwave them for 30 seconds.','Spoon ¾ cup of yogurt into each of 4 bowls.','Top each with ½ cup berries.','Sprinkle ¼ cup granola on top just before eating so it stays crunchy.']},
+  {id:'pb-banana-toast', name:'Peanut Butter Banana Toast', mealType:'breakfast', time:5, tags:['vegetarian'], servingsBase:4,
+   nutrition:{calories:390, protein:13}, nutritionSource:'usda',
+   ingredients:[{name:'Sandwich bread', qty:8, unit:'slices', category:'bakery'},{name:'Peanut butter', qty:8, unit:'tbsp', category:'pantry'},{name:'Bananas', qty:2, unit:'whole', category:'produce'}],
+   steps:['Toast the 8 slices of bread.','Spread 1 tablespoon of peanut butter on each slice while it is warm.','Slice the bananas into thin rounds and lay them on top.']},
+  {id:'turkey-sandwich', name:'Turkey and Cheese Sandwich', mealType:'lunch', time:10, tags:[], servingsBase:4,
+   nutrition:{calories:310, protein:25}, nutritionSource:'usda',
+   ingredients:[{name:'Sandwich bread', qty:8, unit:'slices', category:'bakery'},{name:'Deli turkey', qty:12, unit:'oz', category:'meat_seafood'},{name:'Cheddar cheese slices', qty:4, unit:'slices', category:'dairy_eggs'},{name:'Lettuce leaves (topping)', qty:4, unit:'leaves', category:'produce'},{name:'Yellow mustard', qty:4, unit:'tsp', category:'pantry'}],
+   steps:['Lay out 8 slices of bread.','Spread 1 teaspoon of mustard on 4 of the slices.','Add 3 ounces of turkey (about 4 thin slices), 1 slice of cheese and a lettuce leaf to each.','Top with the other slices and cut in half.']},
+  {id:'chicken-wrap', name:'Chicken, Cheese and Salsa Wrap', mealType:'lunch', time:10, tags:[], servingsBase:4,
+   nutrition:{calories:450, protein:34}, nutritionSource:'usda',
+   ingredients:[{name:'Large flour tortillas', qty:4, unit:'count', category:'bakery'},{name:'Cooked chicken (rotisserie or leftover), shredded', qty:2, unit:'cups', category:'meat_seafood'},{name:'Shredded cheese', qty:1, unit:'cup', category:'dairy_eggs'},{name:'Salsa', qty:0.5, unit:'cup', category:'pantry'}],
+   steps:['Warm each tortilla in the microwave for 15 seconds so it bends without cracking.','Put ½ cup chicken in a line down the middle of each.','Add ¼ cup cheese and 2 tablespoons of salsa.','Fold the bottom up, fold in the sides, then roll it closed.']},
+  {id:'tuna-sandwich', name:'Tuna Salad Sandwich', mealType:'lunch', time:10, tags:[], servingsBase:4,
+   nutrition:{calories:300, protein:16}, nutritionSource:'usda',
+   ingredients:[{name:'Canned tuna in water', qty:2, unit:'cans (5 oz)', category:'pantry'},{name:'Mayonnaise', qty:4, unit:'tbsp', category:'pantry'},{name:'Sandwich bread', qty:8, unit:'slices', category:'bakery'}],
+   steps:['Open the 2 cans of tuna and press the lid down to squeeze out the water.','Put the tuna in a bowl, add the mayonnaise, and mash with a fork.','Spread it on 4 slices of bread and top with the other 4.']},
+  {id:'bean-quesadilla', name:'Bean and Cheese Quesadilla', mealType:'lunch', time:15, tags:['vegetarian'], servingsBase:4,
+   nutrition:{calories:500, protein:19}, nutritionSource:'usda',
+   ingredients:[{name:'Small flour tortillas', qty:8, unit:'count', category:'bakery'},{name:'Refried beans', qty:1, unit:'can (16 oz)', category:'pantry'},{name:'Shredded cheese', qty:1, unit:'cup', category:'dairy_eggs'},{name:'Salsa', qty:0.5, unit:'cup', category:'pantry'}],
+   steps:['Spread a quarter of the beans on each of 4 tortillas.','Sprinkle ¼ cup cheese on each and cover with another tortilla.','Heat a dry pan over medium heat and cook one quesadilla at a time, 2 minutes per side, until golden and the cheese melts.','Cut into wedges and serve with salsa.']},
+];
+
+/* ============================================================
+   v4: YOUR WEEK - 7 days x 3 meals x household size
+   Dinners come from This Week's Plan (day 1 = first dinner, and so on).
+   Breakfasts, lunches and the remaining dinners are picked here.
+   ============================================================ */
+const WK_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WK_MEALS = ['breakfast','lunch','dinner'];
+const WK_LABEL = {breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner'};
+function wkLoad(){ try{ const v = JSON.parse(localStorage.getItem('wt-week-v1')); if(v && v.breakfast) return v; }catch(e){} return {breakfast:Array(7).fill(''), lunch:Array(7).fill(''), dinner:Array(7).fill('')}; }
+var week = wkLoad();
+function wkSave(){ try{ localStorage.setItem('wt-week-v1', JSON.stringify(week)); }catch(e){} }
+function wkPeople(){ return parseInt($('servings').value,10) || 4; }
+function wkOutPrice(){ const v = parseFloat($('wkOutPrice').value); return isFinite(v) && v >= 0 ? v : 10; }
+function wkSlot(meal, d){
+  if(!week || !BL_RECIPES) return {kind:'none'};
+  if(meal==='dinner' && currentPlan[d]) return {kind:'home', recipe:currentPlan[d].recipe, fromPlan:true};
+  const v = week[meal][d];
+  if(v==='out') return {kind:'out'};
+  const r = v && BL_RECIPES.find(x=>x.id===v);
+  return r ? {kind:'home', recipe:r} : {kind:'none'};
+}
+function weekHomeEntries(){
+  const out = [];
+  ['breakfast','lunch'].forEach(m=>{ for(let d=0; d<7; d++){ const s = wkSlot(m,d); if(s.kind==='home') out.push({recipe:s.recipe}); } });
+  return out;
+}
+function shoppingEntries(){ return currentPlan.concat(weekHomeEntries()); }
+function wkCellHTML(meal, d){
+  const s = wkSlot(meal, d), P = wkPeople();
+  const label = `<span class="wk-ml">${WK_LABEL[meal]}</span>`;
+  let body;
+  if(s.fromPlan){
+    body = `<div class="wk-fixed">${escapeHtml(s.recipe.name)}</div>`;
+  } else {
+    const cur = week[meal][d];
+    const opts = [`<option value="" ${cur===''?'selected':''}>Not planned</option>`, `<option value="out" ${cur==='out'?'selected':''}>Eat out</option>`];
+    const recs = BL_RECIPES.filter(r=>r.mealType===meal);
+    if(recs.length) opts.push(`<optgroup label="Cook at home">` + recs.map(r=>{ const c = recipeCost(r, P/r.servingsBase); return `<option value="${r.id}" ${cur===r.id?'selected':''}>${escapeHtml(r.name)} (${money(c.total/P)} each)</option>`; }).join('') + `</optgroup>`);
+    body = `<select id="wk-${meal}-${d}" data-meal="${meal}" data-day="${d}" aria-label="${WK_DAYS[d]} ${WK_LABEL[meal]}">${opts.join('')}</select>`;
+  }
+  let foot = '';
+  if(s.kind==='home'){ const c = recipeCost(s.recipe, P/(s.recipe.servingsBase||BASE_SERVINGS)); foot = `<div class="wk-foot"><span>${money(c.total)}</span><button data-cook="${meal}|${d}">Cook</button></div>`; }
+  else if(s.kind==='out') foot = `<div class="wk-foot"><span>${money(wkOutPrice()*P)}</span></div>`;
+  return `<div class="wk-cell wk-${s.kind}">${label}${body}${foot}</div>`;
+}
+function renderWeek(){
+  const grid = $('wkGrid'); if(!grid) return;
+  const P = wkPeople(), price = wkOutPrice();
+  let html = `<div class="wk-head"><span></span>${WK_MEALS.map(m=>`<span>${WK_LABEL[m]}</span>`).join('')}</div>`;
+  for(let d=0; d<7; d++) html += `<div class="wk-row"><div class="wk-day">${WK_DAYS[d]}</div>${WK_MEALS.map(m=>wkCellHTML(m,d)).join('')}</div>`;
+  grid.innerHTML = html;
+  grid.querySelectorAll('select[data-meal]').forEach(sel=>{
+    sel.onchange = ()=>{ week[sel.dataset.meal][+sel.dataset.day] = sel.value; wkSave(); renderWeek(); renderShoppingList(); };
+  });
+  grid.querySelectorAll('[data-cook]').forEach(b=>{
+    b.onclick = ()=>{ const [m,d] = b.dataset.cook.split('|'); const s = wkSlot(m, +d); openCook(s.recipe, P/(s.recipe.servingsBase||BASE_SERVINGS), P); };
+  });
+  let home = 0, out = 0, none = 0, homeCost = 0;
+  WK_MEALS.forEach(m=>{ for(let d=0; d<7; d++){ const s = wkSlot(m,d);
+    if(s.kind==='home'){ home++; homeCost += recipeCost(s.recipe, P/(s.recipe.servingsBase||BASE_SERVINGS)).total; }
+    else if(s.kind==='out') out++; else none++; } });
+  const total = 21*P, hm = home*P, om = out*P, nm = none*P;
+  const outCost = om*price, weekCost = homeCost + outCost;
+  const pct = x => (100*x/total).toFixed(2) + '%';
+  $('wkTitle').textContent = `${total} meals this week`;
+  $('wkSub').textContent = `21 meals a week × ${P} ${P===1?'person':'people'}`;
+  $('wkBar').innerHTML = `<i class="b-home" style="width:${pct(hm)}"></i><i class="b-out" style="width:${pct(om)}"></i><i class="b-none" style="width:${pct(nm)}"></i>`;
+  $('wkLegend').innerHTML = `<span><i class="b-home"></i><b>${hm}</b> cooked at home</span><span><i class="b-out"></i><b>${om}</b> eaten out</span><span><i class="b-none"></i><b>${nm}</b> not planned yet</span>`;
+  const perPD = weekCost/(P*7);
+  const allOut = total*price, saved = hm*price - homeCost;
+  $('wkTiles').innerHTML =
+    `<div class="wk-tile"><small>Groceries</small><b>${money(homeCost)}</b><span>${hm} home meals · ${hm?money(homeCost/hm):'$0.00'} each</span></div>` +
+    `<div class="wk-tile"><small>Eating out</small><b>${money(outCost)}</b><span>${om} meals at ${money(price)} each</span></div>` +
+    `<div class="wk-tile wk-strong"><small>Planned week total</small><b>${money(weekCost)}</b><span>${money(perPD)} per person per day${nm?', planned meals only':''}</span></div>`;
+  const lines = [];
+  if(hm) lines.push(`Cooking these ${hm} meals instead of eating them out saves about <b>${money(saved)}</b>.`);
+  if(nm) lines.push(`${nm} meals are not planned yet. If those are eaten out too, the week comes to <b>${money(weekCost + nm*price)}</b>.`);
+  lines.push(`For comparison, eating all ${total} meals out would cost about ${money(allOut)}.`);
+  $('wkNote').innerHTML = lines.join(' ');
+  if(shoppingEntries().length) $('shoppingSection').style.display = 'block';
+}
+(function wkInit(){
+  try{ const v = localStorage.getItem('wt-eo-price'); if(v) $('wkOutPrice').value = v; }catch(e){}
+  $('wkOutPrice').addEventListener('input', ()=>{ try{ localStorage.setItem('wt-eo-price', $('wkOutPrice').value); }catch(e){} renderWeek(); });
+  $('wkFillBL').onclick = ()=>{
+    const b = BL_RECIPES.filter(r=>r.mealType==='breakfast'), l = BL_RECIPES.filter(r=>r.mealType==='lunch');
+    for(let d=0; d<7; d++){ if(!week.breakfast[d]) week.breakfast[d] = b[d % b.length].id; if(!week.lunch[d]) week.lunch[d] = l[d % l.length].id; }
+    wkSave(); renderWeek(); renderShoppingList();
+  };
+  $('wkRestOut').onclick = ()=>{ WK_MEALS.forEach(m=>{ for(let d=0; d<7; d++){ if(wkSlot(m,d).kind==='none') week[m][d] = 'out'; } }); wkSave(); renderWeek(); renderShoppingList(); };
+  $('wkClear').onclick = ()=>{ week = {breakfast:Array(7).fill(''), lunch:Array(7).fill(''), dinner:Array(7).fill('')}; wkSave(); renderWeek(); renderShoppingList(); };
+  const _renderPlanV3 = renderPlan;
+  renderPlan = function(){ _renderPlanV3(); renderWeek(); };
+})();
+
+renderMyRecipes();
+renderWeek();
+</script>
+</body>
+</html>
