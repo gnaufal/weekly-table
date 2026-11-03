@@ -292,6 +292,63 @@
     .wk-row{grid-template-columns:1fr;border-top:1px solid var(--line);padding-top:8px;}
     .wk-ml{display:block;}
   }
+
+  /* ===== v5: mobile pass ===== */
+  details.notes{background:#fff8e6;border-bottom:1px solid #f0ddaa;color:#7a5b0a;font-size:12.5px;}
+  details.notes summary{cursor:pointer;padding:7px 14px;text-align:center;font-weight:700;list-style:none;}
+  details.notes summary::-webkit-details-marker{display:none;}
+  details.notes .disclaimer,details.notes .verified-note{border:0;}
+  details.settings-box{margin:0 0 20px;}
+  details.settings-box > summary{cursor:pointer;color:var(--sub);font-size:13.5px;padding:10px 4px;font-weight:600;}
+  details.settings-box > section.panel{margin-top:6px;}
+  .ti{display:inline;}
+  .tl-short{display:none;}
+  .ck-jump{display:none;}
+  .wk-days{display:none;}
+  section.panel,.shopping-section{scroll-margin-top:70px;}
+  @media (max-width:720px){
+    header{padding:10px 16px calc(10px);}
+    header h1{font-size:20px;margin:0;}
+    header p{display:none;}
+    .tabs{position:fixed;left:0;right:0;bottom:0;z-index:900;display:grid;grid-template-columns:repeat(5,1fr);gap:0;
+      background:var(--accent-dark);padding:4px max(4px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));
+      box-shadow:0 -2px 10px rgba(0,0,0,.12);}
+    .tab-btn{border-radius:10px;padding:6px 2px;font-size:11px;line-height:1.15;display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent;color:#fff;opacity:.7;min-height:48px;justify-content:center;}
+    .tab-btn.active{background:rgba(255,255,255,.16);color:#fff;opacity:1;}
+    .tab-btn .ti{font-size:19px;line-height:1;}
+    .tab-btn .tl-long{display:none;}
+    .tab-btn .tl-short{display:block;}
+    body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));}
+    main{padding:14px 12px 24px;}
+    section.panel{padding:14px 14px;border-radius:14px;margin-bottom:14px;}
+    section.panel h2{font-size:18px;}
+    input,select,textarea{font-size:16px !important;}
+    .ghost-btn,.primary-btn{min-height:42px;}
+    .controls-row{gap:10px;}
+    .card-actions button{min-height:38px;font-size:13px;}
+    .ck-jump{display:flex;gap:6px;overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--bg);
+      padding:8px 0;margin:-6px 0 10px;scrollbar-width:none;}
+    .ck-jump::-webkit-scrollbar{display:none;}
+    .ck-jump button{flex:none;font-size:14px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;}
+    .wk-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:4px 0 10px;}
+    .wk-days button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 0;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;}
+    .wk-days button small{font-size:10px;font-weight:600;color:var(--sub);font-variant-numeric:tabular-nums;}
+    .wk-days button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .wk-days button[aria-pressed="true"] small{color:#dfe9ec;}
+    .wk-row:not(.wk-cur){display:none !important;}
+    .wk-row{border-top:0 !important;padding-top:0 !important;}
+    .wk-day{display:none;}
+    .wk-foot button{min-height:34px;padding:4px 14px;font-size:13px;}
+    .wk-controls label{width:auto;}
+    select{max-width:100%;}
+    .controls-row > div{min-width:0;max-width:100%;}
+    .wk-tiles{grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:6px;}
+    .wk-tile{padding:8px 8px;}
+    .wk-tile b{font-size:17px;}
+    .wk-tile small{font-size:9.5px;letter-spacing:.05em;}
+    .wk-tile span{font-size:10.5px;line-height:1.3;display:block;}
+    .wk-top h3{font-size:21px;}
+  }
 </style>
 </head>
 <body>
@@ -2821,6 +2878,7 @@ const WK_MEALS = ['breakfast','lunch','dinner'];
 const WK_LABEL = {breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner'};
 function wkLoad(){ try{ const v = JSON.parse(localStorage.getItem('wt-week-v1')); if(v && v.breakfast) return v; }catch(e){} return {breakfast:Array(7).fill(''), lunch:Array(7).fill(''), dinner:Array(7).fill('')}; }
 var week = wkLoad();
+var wkDay = (new Date().getDay()+6)%7;
 function wkSave(){ try{ localStorage.setItem('wt-week-v1', JSON.stringify(week)); }catch(e){} }
 function wkPeople(){ return parseInt($('servings').value,10) || 4; }
 function wkOutPrice(){ const v = parseFloat($('wkOutPrice').value); return isFinite(v) && v >= 0 ? v : 10; }
@@ -2860,8 +2918,11 @@ function renderWeek(){
   const grid = $('wkGrid'); if(!grid) return;
   const P = wkPeople(), price = wkOutPrice();
   let html = `<div class="wk-head"><span></span>${WK_MEALS.map(m=>`<span>${WK_LABEL[m]}</span>`).join('')}</div>`;
-  for(let d=0; d<7; d++) html += `<div class="wk-row"><div class="wk-day">${WK_DAYS[d]}</div>${WK_MEALS.map(m=>wkCellHTML(m,d)).join('')}</div>`;
-  grid.innerHTML = html;
+  for(let d=0; d<7; d++) html += `<div class="wk-row${d===wkDay?' wk-cur':''}"><div class="wk-day">${WK_DAYS[d]}</div>${WK_MEALS.map(m=>wkCellHTML(m,d)).join('')}</div>`;
+  const chips = WK_DAYS.map((dn,d)=>{ let c = 0, n = 0; WK_MEALS.forEach(m=>{ const s = wkSlot(m,d); if(s.kind==='home') c += recipeCost(s.recipe, P/(s.recipe.servingsBase||BASE_SERVINGS)).total; else if(s.kind==='out') c += price*P; else n++; });
+    return `<button aria-pressed="${d===wkDay}" data-wkday="${d}">${dn}<small>${n===3?'—':'$'+Math.round(c)}</small></button>`; }).join('');
+  grid.innerHTML = `<div class="wk-days">${chips}</div>` + html;
+  grid.querySelectorAll('[data-wkday]').forEach(b=> b.onclick = ()=>{ wkDay = +b.dataset.wkday; renderWeek(); });
   grid.querySelectorAll('select[data-meal]').forEach(sel=>{
     sel.onchange = ()=>{ week[sel.dataset.meal][+sel.dataset.day] = sel.value; wkSave(); renderWeek(); renderShoppingList(); };
   });
@@ -2904,6 +2965,54 @@ function renderWeek(){
   $('wkClear').onclick = ()=>{ week = {breakfast:Array(7).fill(''), lunch:Array(7).fill(''), dinner:Array(7).fill('')}; wkSave(); renderWeek(); renderShoppingList(); };
   const _renderPlanV3 = renderPlan;
   renderPlan = function(){ _renderPlanV3(); renderWeek(); };
+})();
+
+
+/* ============================================================
+   v5: MOBILE LAYOUT HELPERS (run once on load)
+   ============================================================ */
+(function mobilePass(){
+  // tab labels: emoji + long label (desktop) + short label (phone bottom bar)
+  const SHORT = {eatingout:'Eat out', cookingathome:'Cook', suggest:'Suggest', mood:'Mood', budget:'Budget'};
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const t = b.textContent.trim(), i = t.indexOf(' ');
+    const icon = i>0 ? t.slice(0,i) : '', label = i>0 ? t.slice(i+1) : t;
+    b.innerHTML = `<span class="ti">${icon}</span> <span class="tl-long">${label}</span><span class="tl-short">${SHORT[b.dataset.tab]||label}</span>`;
+    b.addEventListener('click', ()=>{ try{ window.scrollTo({top:0}); }catch(e){} });
+  });
+  // fold the two notices into one tappable line
+  const disc = document.querySelector('.disclaimer'), ver = document.querySelector('.verified-note');
+  if(disc){
+    const det = document.createElement('details'); det.className = 'notes';
+    det.innerHTML = '<summary>ⓘ Not medical advice · About the data</summary>';
+    disc.parentNode.insertBefore(det, disc); det.appendChild(disc); if(ver) det.appendChild(ver);
+  }
+  // settings panels (API keys): fold away and move to the bottom of their tab
+  document.querySelectorAll('.tab-panel').forEach(tab=>{
+    tab.querySelectorAll(':scope > section.panel').forEach(sec=>{
+      const h = sec.querySelector('h2');
+      if(h && h.textContent.trim()==='Settings'){
+        const det = document.createElement('details'); det.className = 'settings-box';
+        det.innerHTML = '<summary>Settings and API keys (optional)</summary>';
+        tab.appendChild(det); det.appendChild(sec);
+      }
+    });
+  });
+  // cooking tab: plan first, then week, shopping, my recipes, stores
+  const cook = $('tab-cookingathome');
+  if(cook){
+    const byTitle = t => [...cook.querySelectorAll(':scope > section.panel')].find(s=>{ const h = s.querySelector('h2'); return h && h.textContent.trim()===t; });
+    const plan = byTitle("This Week's Plan"), wk = $('weekPanel'), shop = $('shoppingSection'), mine = byTitle('My Recipes'), stores = byTitle('Your Stores');
+    const foot = cook.querySelector(':scope > p'), settings = cook.querySelector(':scope > details.settings-box');
+    [plan, wk, shop, mine, stores, foot, settings].forEach(el=>{ if(el) cook.appendChild(el); });
+    const nav = document.createElement('div'); nav.className = 'ck-jump';
+    [['Plan',plan],['Week',wk],['Shopping',shop],['My recipes',mine],['Stores',stores]].forEach(([label, el])=>{
+      if(!el) return; const b = document.createElement('button'); b.textContent = label;
+      b.onclick = ()=>{ if(el.style.display==='none'){ plan && plan.scrollIntoView({behavior:'smooth'}); return; } el.scrollIntoView({behavior:'smooth'}); };
+      nav.appendChild(b);
+    });
+    cook.insertBefore(nav, cook.firstChild);
+  }
 })();
 
 renderMyRecipes();
