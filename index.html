@@ -349,6 +349,15 @@
     .wk-tile span{font-size:10.5px;line-height:1.3;display:block;}
     .wk-top h3{font-size:21px;}
   }
+
+  /* ===== v6: backup / restore ===== */
+  details.data-box{max-width:980px;margin:0 auto 24px;padding:0 16px;}
+  details.data-box > summary{cursor:pointer;color:var(--sub);font-size:13.5px;padding:10px 4px;font-weight:600;}
+  .data-inner{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;}
+  .data-inner p{margin:0;color:var(--sub);line-height:1.45;}
+  .data-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  #dataMsg{font-weight:600;color:var(--ink);}
+  #dataMsg.err{color:var(--red);}
 </style>
 </head>
 <body>
@@ -634,6 +643,23 @@
 </div>
 
 </main>
+<details class="data-box" id="dataBox">
+  <summary>Your data: back up or restore</summary>
+  <div class="data-inner">
+    <p>Your plans, week, stores, food log and profile are saved only in this browser on this device. Download a backup to keep a copy or to move your data to another phone or computer. API keys are not included.</p>
+    <div class="data-row">
+      <button class="primary-btn" id="dataBackup">Download backup</button>
+      <label class="ghost-btn" for="dataFile" style="display:inline-flex;align-items:center;">Restore from a backup file</label>
+      <input type="file" id="dataFile" accept=".json,application/json" hidden>
+    </div>
+    <div class="data-row" id="dataConfirm" hidden>
+      <span>This replaces the data on this device with the backup from <b id="dataWhen"></b>.</span>
+      <button class="primary-btn" id="dataDoRestore">Restore</button>
+      <button class="ghost-btn" id="dataCancel">Cancel</button>
+    </div>
+    <p id="dataMsg" role="status"></p>
+  </div>
+</details>
 
 <footer>
   Recipes are general suggestions and quantities/nutrition are estimates — always check for allergens and adjust to taste. Aisle locations are whatever <i>you've</i> told the app for each store. Restaurant nutrition values may vary by location and customization. Weekly Table is an independent tool, not affiliated with any restaurant chain, Nom, Spoonacular, or OpenStreetMap.
@@ -3015,7 +3041,80 @@ function renderWeek(){
   }
 })();
 
+
+/* ============================================================
+   v6: SAVE THE DINNER PLAN + BACKUP / RESTORE
+   ============================================================ */
+const LS_PLAN = 'wt-plan-v1';
+function savePlan(){
+  try{
+    // built-in recipes are saved by id; Spoonacular recipes are not stored (their terms limit caching)
+    const plan = currentPlan.filter(e=>!e.recipe.isExternal).map(e=>({id:e.recipe.id, locked:!!e.locked}));
+    localStorage.setItem(LS_PLAN, JSON.stringify({plan, servings:$('servings').value, numMeals:$('numMeals').value}));
+  }catch(e){}
+}
+function restorePlan(){
+  try{
+    const v = JSON.parse(localStorage.getItem(LS_PLAN)); if(!v) return;
+    if(v.servings) $('servings').value = v.servings;
+    if(v.numMeals) $('numMeals').value = v.numMeals;
+    currentPlan = (v.plan||[]).map(x=>{ const r = RECIPES.find(r=>r.id===x.id); return r ? {recipe:r, locked:!!x.locked} : null; }).filter(Boolean);
+    if(currentPlan.length){ renderPlan(); renderShoppingList(); $('shoppingSection').style.display = 'block'; }
+  }catch(e){}
+}
+(function(){
+  const _rp = renderPlan; renderPlan = function(){ _rp(); savePlan(); };
+  $('servings').addEventListener('change', savePlan);
+  $('numMeals').addEventListener('change', savePlan);
+})();
+
+const BACKUP_EXACT = ['wt-plan-v1','wt-week-v1','wt-eo-price','wt_stores','wt_aisles','wt_mood_history','wt_budget_profile'];
+const BACKUP_PREFIX = ['wt_foodlog_','wt_steps_'];
+function backupKey(k){ return BACKUP_EXACT.includes(k) || BACKUP_PREFIX.some(p=>k.startsWith(p)); }
+function dataMsg(t, err){ const m = $('dataMsg'); m.textContent = t; m.className = err ? 'err' : ''; }
+let pendingRestore = null;
+$('dataBackup').onclick = ()=>{
+  try{
+    const data = {};
+    for(let i=0; i<localStorage.length; i++){ const k = localStorage.key(i); if(backupKey(k)) data[k] = localStorage.getItem(k); }
+    const now = new Date();
+    const blob = new Blob([JSON.stringify({app:'weekly-table', version:1, saved:now.toISOString(), data}, null, 1)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `weekly-table-backup-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    dataMsg(`Backup downloaded (${Object.keys(data).length} items). Keep the file somewhere safe, such as your email or cloud storage.`);
+  }catch(e){ dataMsg('The backup could not be created in this browser. Try another browser.', true); }
+};
+$('dataFile').onchange = e=>{
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      const v = JSON.parse(rd.result);
+      if(!v || v.app!=='weekly-table' || typeof v.data!=='object') throw new Error('not ours');
+      pendingRestore = v;
+      $('dataWhen').textContent = v.saved ? new Date(v.saved).toLocaleString() : 'an unknown date';
+      $('dataConfirm').hidden = false; dataMsg('');
+    }catch(err){ dataMsg('That file is not a Weekly Table backup. Choose the .json file you downloaded from "Download backup".', true); }
+    $('dataFile').value = '';
+  };
+  rd.readAsText(f);
+};
+$('dataCancel').onclick = ()=>{ pendingRestore = null; $('dataConfirm').hidden = true; dataMsg('Restore cancelled. Nothing was changed.'); };
+$('dataDoRestore').onclick = ()=>{
+  if(!pendingRestore) return;
+  try{
+    const ks = []; for(let i=0; i<localStorage.length; i++){ const k = localStorage.key(i); if(backupKey(k)) ks.push(k); }
+    ks.forEach(k=>localStorage.removeItem(k));
+    Object.entries(pendingRestore.data).forEach(([k,v])=>{ if(backupKey(k) && typeof v==='string') localStorage.setItem(k, v); });
+    dataMsg('Restored. Reloading…'); setTimeout(()=>location.reload(), 600);
+  }catch(e){ dataMsg('The restore did not finish because this browser blocked saving. Nothing was lost from the backup file.', true); }
+};
+
 renderMyRecipes();
+restorePlan();
 renderWeek();
 </script>
 </body>
