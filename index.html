@@ -1537,6 +1537,9 @@ const PRICES = {
   'ripe bananas|whole':[0.25,'bls'], 'butter|cup, melted':[2.24,'est'], 'sugar|cup':[0.46,'bls'], 'egg|whole, beaten':[0.20,'bls'],
   'vanilla extract|tsp':[0.58,'est'], 'baking soda|tsp':[0.02,'est'], 'salt|pinch':[0.01,'est'], 'all-purpose flour|cups':[0.13,'bls'],
   'mini chocolate chips|cup':[1.76,'est'],
+  'eggs, whites only|large':[0.20,'bls'], 'lemon juice|tsp':[0.05,'est'], 'unsweetened cocoa powder|cup':[1.50,'est'],
+  'chocolate protein powder|cup':[4.00,'est'], 'stevia or other sweetener|cup, sugar-equivalent':[1.00,'est'],
+  'baking powder|tsp':[0.03,'est'], 'unsweetened almond milk|tbsp':[0.02,'est'],
 };
 function priceOf(ing){ return PRICES[(ing.name+'|'+(ing.unit||'')).toLowerCase()] || null; }
 function ingCost(ing, mult){ const p = priceOf(ing); return p ? (ing.qty||0)*mult*p[0] : null; }
@@ -1576,6 +1579,30 @@ const MY_RECIPES = [
      'Bake 50 to 60 minutes, until a toothpick in the middle comes out clean.',
      'Let it cool completely before slicing.'
    ]},
+  {id:'protein-sheet-brownies', name:'High-Protein Sheet Pan Brownies', mealType:'treat', time:40, tags:['vegetarian','gluten-free','high protein'], servingsBase:4,
+   sourceUrl:'', sourceName:'#healthyfood video post, 8 Nov 2026',
+   nutrition:{calories:105, protein:19}, nutritionSource:'usda',
+   ingredients:[
+     {name:'Eggs, whites only', qty:6, unit:'large', category:'dairy_eggs'},
+     {name:'Lemon juice', qty:0.25, unit:'tsp', category:'produce'},
+     {name:'Unsweetened cocoa powder', qty:0.25, unit:'cup', category:'pantry'},
+     {name:'Chocolate protein powder', qty:0.5, unit:'cup', category:'pantry'},
+     {name:'Stevia or other sweetener', qty:0.25, unit:'cup, sugar-equivalent', category:'pantry'},
+     {name:'Baking powder', qty:0.5, unit:'tsp', category:'pantry'},
+     {name:'Unsweetened almond milk', qty:2, unit:'tbsp', category:'dairy_eggs'},
+     {name:'Vanilla extract', qty:1, unit:'tsp', category:'pantry'},
+     {name:'Salt', qty:1, unit:'pinch', category:'pantry'},
+   ],
+   steps:[
+     'Turn the oven to 350°F. Line a small square pan (8 by 8 inches) with parchment paper.',
+     'Separate the 6 eggs. Put the whites in a large clean bowl; save the yolks for something else.',
+     'Beat the whites with a mixer until they stand up in stiff peaks. Add the lemon juice and beat a few seconds more.',
+     'In a second bowl, stir together the cocoa, protein powder, sweetener and baking powder.',
+     'Add the milk, vanilla and a pinch of salt to the dry mix and stir into a thick paste. Add a little more milk only if it will not come together.',
+     'Gently fold the chocolate paste into the egg whites with a spatula until no white streaks are left. Do not stir hard, or the whites will go flat.',
+     'Spread the batter in the pan. Add a few chocolate chips on top if you like (not counted in the calories). Bake 15 to 20 minutes, until the middle springs back.',
+     'Let it cool completely, then cut into 4 pieces. The whole pan is about 420 calories and 75 g protein.'
+   ]},
 ];
 function renderMyRecipes(){
   const row = $('myRecipesRow'); if(!row) return;
@@ -1586,7 +1613,7 @@ function renderMyRecipes(){
     const n = r.servingsBase;
     card.innerHTML = `<h4>${escapeHtml(r.name)}</h4>
       <div class="meta">${r.time} min · makes ${n}${costLine(r,1,n)} · ${r.nutrition.calories} cal, ${r.nutrition.protein}g protein (per serving)<span class="est">USDA est.</span></div>
-      ${r.sourceUrl ? `<div class="meta">From <a href="${r.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(r.sourceName||'original')}</a></div>` : ''}
+      ${r.sourceUrl ? `<div class="meta">From <a href="${r.sourceUrl}" target="_blank" rel="noopener">${escapeHtml(r.sourceName||'original')}</a></div>` : (r.sourceName ? `<div class="meta">From ${escapeHtml(r.sourceName)}</div>` : '')}
       <div class="card-actions"><button class="cook-btn" data-act="cook">Cook this</button></div>`;
     card.querySelector('[data-act=cook]').onclick = ()=> openCook(r, 1, n);
     row.appendChild(card);
